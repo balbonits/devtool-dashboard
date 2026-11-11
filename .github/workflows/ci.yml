@@ -1,0 +1,27 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint          # eslint + token lint (no @keyframes, literal colors or hardcoded shape values)
+      - run: npm test
+      - run: npm run build
+      - name: Serve the build at its real path
+        run: |
+          mkdir -p /tmp/site/ux && cp -r dist /tmp/site/ux/dev-dashboard
+          npx -y http-server /tmp/site -p 4174 -s &
+          npx -y wait-on -t 60000 http://127.0.0.1:4174/ux/dev-dashboard/
+      - run: npm run test:a11y
+        env:
+          CHROME_PATH: /usr/bin/google-chrome

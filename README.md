@@ -1,6 +1,6 @@
 # Dev dashboard (devtool-dashboard)
 
-A deploy dashboard prototype for an on-call engineer, built with [Ember UI](https://github.com/balbonits/a11y-design-system) (pinned to `v0.2.2`). It's UX case study #3 on [jdilig.me/ux](https://jdilig.me/ux/) and will live at `jdilig.me/ux/dev-dashboard/`.
+A deploy dashboard prototype for an on-call engineer, built with [Ember UI](https://github.com/balbonits/a11y-design-system) (pinned to Ember main `2d59d7b`, which includes the kinetic theme; no tag). It's UX case study #3 on [jdilig.me/ux](https://jdilig.me/ux/) and will live at `jdilig.me/ux/dev-dashboard/`.
 
 All services, people, commits and logs are **fictional mock data**. There is no backend.
 

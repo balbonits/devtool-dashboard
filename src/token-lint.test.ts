@@ -15,4 +15,8 @@ describe('token-lint', () => {
   it('catches a retired name in a .tsx file too', () => {
     expect(lintSource('a.tsx', `const s = { borderRadius: 'var(${RETIRED[0]})' };`)).toHaveLength(1);
   });
+  it('fails literal colors everywhere in our CSS, token declarations included (no local token file)', () => {
+    expect(lintSource('src/app.css', ':root {\n  --palette-white: #FFFFFF;\n}')).toHaveLength(1);
+    expect(lintSource('src/styles/fonts.css', '.x { color: #fff; }')).toHaveLength(1);
+  });
 });

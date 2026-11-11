@@ -18,9 +18,9 @@ describe('keyboard shortcuts (R-7)', () => {
     render(<App demo={null} runs={makeRuns()} />);
     await user.keyboard('?');
     const dialog = screen.getByRole('dialog', { name: 'Keyboard shortcuts' });
-    const keys = within(dialog).getAllByRole('rowheader').map((th) => th.textContent);
+    const keys = [...dialog.querySelectorAll('dl dt')].map((dt) => dt.textContent);
     expect(keys).toEqual(SHORTCUTS.map((s) => s.key));
-    await user.click(within(dialog).getByRole('button', { name: 'Done' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }));
     for (const s of SHORTCUTS.filter((x) => x.single)) {
       expect(document.querySelector(`[aria-keyshortcuts~="${s.aria}"]`), s.key).not.toBeNull();
     }
@@ -61,7 +61,7 @@ describe('keyboard shortcuts (R-7)', () => {
     await user.click(screen.getByRole('button', { name: 'Keyboard shortcuts' }));
     await user.click(screen.getByRole('checkbox', { name: /Single-key shortcuts/ }));
     expect(localStorage.getItem(SHORTCUTS_KEY)).toBe('off');
-    await user.click(screen.getByRole('button', { name: 'Done' }));
+    await user.click(screen.getByRole('button', { name: 'Close' }));
     unmount();
 
     render(<App demo={null} runs={makeRuns()} />);

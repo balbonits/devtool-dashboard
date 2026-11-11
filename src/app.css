@@ -1,83 +1,183 @@
-/* Styles are token-driven: colors, spacing, radii, borders and type come only from Ember UI tokens, so the dashboard theme (Creatives) can drop in later.
-   Shape properties (border-radius, border widths, box-shadow, outline) use only var(--…), 0 or none; only the locked R-2 names (ARCH-REVIEW Addendum 5).
-   Ember v0.2.2 doesn't define --radius-sm/md/lg, --border-width or --target-min yet: radii render square until v0.3.0,
-   and --border-width and --target-min keep a fallback so borders and 44px targets hold meanwhile.
-   Focus rings come from Ember (.em-focus). scripts/token-lint.mjs enforces all of this in CI. */
+/* Dev dashboard, kinetic theme (HANDOFF @938e642). Token-only: colors, radii, borders, focus and motion come from the
+   locked R-2 names (Addendum 5, 7, 8 and 10), defined by Ember's registered kinetic theme (ember-ui pinned to Ember main 2d59d7b).
+   Shape properties use only var(--…), 0 or none. scripts/token-lint.mjs enforces this in CI.
+   Mobile-first: min-width breakpoints only (xs 480, sm 700, md 900, lg 1024). */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
-body { margin: 0; background: var(--color-bg); }
-.dd-app { min-height: 100vh; display: flex; flex-direction: column; }
-.dd-skip { position: absolute; left: var(--space-2); top: calc(-1 * var(--space-16)); background: var(--surface); color: var(--text); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); z-index: 10; display: inline-flex; align-items: center; min-height: var(--target-min, 44px); }
-.dd-skip:focus { top: var(--space-2); }
-.dd-demo-note { margin: 0; padding: var(--space-2) var(--space-4); font-size: var(--text-sm); background: var(--surface-muted); color: var(--text); }
-.dd-demo-note a { color: var(--text); display: inline-flex; align-items: center; min-height: var(--target-min, 44px); }
-.dd-main { flex: 1; width: 100%; max-width: 1440px; margin: 0 auto; padding: var(--space-4); outline: 0; }
-.dd-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
-.dd-head h1 { margin: 0; font-size: var(--text-2xl); }
-.dd-search { flex: 1 1 16rem; max-width: 28rem; }
-.dd-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-3); align-items: end; margin-bottom: var(--space-3); }
-.dd-count { margin: 0 0 var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
-.dd-muted { color: var(--text-muted); font-size: var(--text-sm); }
-.dd-calm { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-3); padding: var(--space-3) var(--space-4); border: var(--border-width, 1px) solid var(--border-subtle); border-radius: var(--radius-md); background: var(--surface); }
-.dd-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin: 0 0 var(--space-3); padding: var(--space-3) var(--space-4); border: var(--border-width, 1px) solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
-.dd-banner p { margin: 0; font-weight: var(--weight-medium); }
-.dd-banner--error { border-color: var(--danger); }
-.dd-status { display: inline-flex; align-items: center; gap: var(--space-1); font-weight: var(--weight-medium); }
-.dd-status-icon { font-family: var(--font-mono); }
-.dd-status--failed .dd-status-icon { color: var(--danger); }
-.dd-status--running .dd-status-icon { color: var(--info); }
-.dd-status--succeeded .dd-status-icon { color: var(--success); }
-.dd-status--canceled .dd-status-icon { color: var(--text-muted); }
-.dd-commit code, .em-table code { font-family: var(--font-mono); font-size: var(--text-xs); }
+html { scroll-padding-top: 9rem; }
+body { margin: 0; background: var(--color-bg); color: var(--text); font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.6; }
+.dd-mono, code, kbd { font-family: var(--font-mono); }
+.dd-muted { color: var(--text-muted); }
+.dd-app { min-height: 100vh; display: flex; flex-direction: column; font-family: var(--font-body); }
+.dd-wrap { width: 100%; max-width: 1320px; margin-inline: auto; padding-inline: 1.25rem; box-sizing: border-box; }
+.dd-wrap > *, .dd-filters > *, .dd-envbar > * { min-width: 0; }
+
+/* Focus: 3px solid ring, 3px offset, on everything (H-4), including the dashboard's own controls Ember doesn't style. */
+.dd-app :focus-visible, .dd-dialog :focus-visible { outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color); outline-offset: var(--focus-ring-offset); }
+#main:focus, h1:focus, h2:focus { outline: 0; }
+#main h1:focus-visible, .dd-dialog h2:focus-visible { outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color); }
+
+/* Skip link */
+.dd-skip { position: absolute; left: 1rem; top: -100vh; z-index: 30; display: inline-flex; align-items: center; min-height: var(--target-min); padding: 0 1rem; background: var(--color-bg); color: var(--text); border: var(--border-width) solid var(--border); border-radius: var(--radius-md); }
+.dd-skip:focus { top: 1rem; }
+
+/* Header (H-3): sticky, page background, 1px cobalt bottom rule. */
+.dd-top { position: sticky; top: 0; z-index: 10; background: var(--color-bg); border-bottom: var(--rule) solid var(--border); }
+.dd-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1.5rem; padding-block: .5rem; }
+.dd-logo { display: inline-flex; flex-wrap: wrap; align-items: baseline; column-gap: .6rem; align-content: center; min-height: var(--target-min); color: var(--text); text-decoration: none; font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; line-height: 1.1; }
+.dd-logo .dd-mono { font-size: .78rem; font-weight: 400; letter-spacing: .06em; text-transform: uppercase; }
+/* Ticker (HANDOFF motion table; Creatives 2026-11-10): the one solid band. Motion is WAAPI in Ticker.tsx, not @keyframes. */
+.dd-ticker { display: flex; align-items: center; background: var(--highlight); color: var(--highlight-contrast); --focus-ring-color: var(--highlight-contrast); }
+.dd-ticker-clip { position: relative; flex: 1; display: flex; min-width: 0; overflow: hidden; }
+.dd-ticker-track { display: flex; flex: none; white-space: nowrap; padding-block: .75rem; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; letter-spacing: -.01em; will-change: transform; }
+.dd-ticker-track span { padding-right: 3rem; }
+.dd-ticker-clip[hidden] { display: none; }
+.dd-ticker-static { flex: 1; min-width: 0; margin: 0; padding-block: .75rem; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.dd-tickbtn { flex: none; display: inline-flex; align-items: center; min-height: var(--target-min); min-width: var(--target-min); margin: .35rem .6rem; padding: 0 1rem; border: var(--border-width) solid var(--highlight-contrast); border-radius: var(--radius-md); background: transparent; color: var(--highlight-contrast); font-family: var(--font-body); font-weight: 600; font-size: .85rem; cursor: pointer; }
+
+/* Prototype note */
+.dd-pnote p { margin: 1.6rem 0 0; padding: .2rem 0 .2rem .8rem; border-left: var(--border-width-strong) solid var(--border); }
+.dd-pnote a { display: inline-flex; align-items: center; min-height: var(--target-min); color: var(--text); }
+
+/* Page head (H-1): eyebrow, h1 and the shortcuts button share a row; the button is icon-only below 480px. */
+.dd-main { flex: 1; padding-block: 1.5rem 3rem; outline: 0; }
+.dd-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
+.dd-head > div { min-width: 0; }
+.dd-eyebrow { margin: 0 0 .6rem; font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; }
+.dd-head h1 { margin: 0; font-family: var(--font-display); font-weight: var(--weight-display); font-size: clamp(2.8rem, 11vw, 7rem); line-height: .95; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.dd-keysbtn { flex: none; min-width: var(--target-min); }
+.dd-kq { font-family: var(--font-mono); font-size: 1.25rem; }
+.dd-kl { display: none; }
+
+/* Buttons (H-4): size, border, radius, the inverted hover (Addendum 10) and the 1px press (Addendum 8, 0 under reduced
+   motion) all come from Ember's kinetic theme. Only the HANDOFF's label type, the page-coloured secondary fill and a
+   readable disabled state are set here. */
+.dd-app .em-btn, .dd-dialog .em-btn { font-size: 1rem; font-weight: 600; }
+.dd-app .em-btn--secondary, .dd-dialog .em-btn--secondary { background: var(--color-bg); }
+.dd-app .em-btn:disabled, .dd-dialog .em-btn:disabled { background: var(--surface-muted); color: var(--text-muted); border: var(--border-width) solid var(--border-subtle); cursor: not-allowed; opacity: 1; }
+.dd-hint { margin: .35rem 0 0; font-size: 1rem; color: var(--text-muted); }
+
+/* Fields (H-4): 48px, 2px bottom rule only (Ember's field has a full border, so the HANDOFF's underline is set here). */
+.dd-app .em-control { width: 100%; min-height: var(--control-height); padding: .4rem 0; font-size: 1.1rem; font-family: var(--font-body); background: var(--color-bg); color: var(--text); border: 0; border-bottom: var(--border-width) solid var(--border); border-radius: var(--radius-sm); box-sizing: border-box; }
+/* H-1: the field hint sits under the field (visual order only; it's tied to the field by aria-describedby). */
+.dd-app .em-field { display: flex; flex-direction: column; }
+.dd-app .em-field .em-hint { order: 2; margin: .35rem 0 0; }
+.dd-app .em-label, .dd-dialog .em-label { font-weight: 600; }
+.dd-app .em-hint, .dd-dialog .em-hint { color: var(--text-muted); font-size: 1rem; }
+
+/* Tabs and search (H-1): Tabs on one row with search full width under them; one row from 900px. */
+.dd-envbar { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
+/* The 6px padding keeps the focus ring inside the scroll box; the negative margin keeps the first tab on the text edge. */
+.dd-tabs { display: flex; gap: 1.4rem; padding: 6px 6px 0; margin-inline: -6px; border-bottom: var(--rule) solid var(--border-subtle); overflow-x: auto; }
+.dd-tabs [role="tab"] { min-height: var(--target-min); padding: 0; font: inherit; font-weight: 600; color: var(--text-muted); background: none; border: 0; border-bottom: var(--border-width-strong) solid transparent; border-radius: 0; cursor: pointer; white-space: nowrap; }
+.dd-tabs [role="tab"][aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+.dd-search { margin: 0; }
+
+/* Failures banner and all-green line (H-4) */
+.dd-banner { display: grid; gap: .6rem; justify-items: start; margin: 0 0 1.5rem; padding: 1rem 0; border-top: var(--border-width) solid var(--danger); border-bottom: var(--rule) solid var(--border-subtle); }
+.dd-banner h2 { display: flex; align-items: center; gap: .6rem; margin: 0; font-family: var(--font-display); font-size: 1.5rem; color: var(--danger); }
+.dd-banner p { margin: 0; }
+.dd-calm { display: flex; align-items: center; gap: .6rem; margin: 0 0 1.5rem; padding-top: 1rem; font-weight: 700; border-top: var(--border-width) solid var(--success); }
+
+/* Status shapes (H-4): Succeeded square, Failed diamond, Running thin bar, Canceled hollow square. Never color alone. */
+.dd-status { display: inline-flex; align-items: center; gap: .5rem; font-family: var(--font-mono); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+.dd-shape { flex: none; display: inline-block; width: .7rem; height: .7rem; border-radius: 0; background: currentColor; }
+.dd-shape--succeeded { color: var(--success); }
+.dd-shape--failed { color: var(--danger); transform: rotate(45deg) scale(.85); }
+.dd-shape--running { color: var(--info); height: .25rem; width: .9rem; }
+.dd-shape--canceled { color: var(--text-muted); background: none; border: var(--border-width) solid var(--text-muted); box-sizing: border-box; }
+
+/* Filters (H-1): stacked at base, 4 across from 700px. */
+.dd-filters { display: grid; gap: 1rem; margin-bottom: 1rem; }
+.dd-clearf { display: flex; flex-direction: column; align-items: flex-start; }
+.dd-count { margin: .4rem 0 .8rem; font-weight: 600; }
+
+/* Runs table (H-2): 880px min width inside its own focusable scroll region; rows 44px+. */
+.dd-tscroll { position: relative; overflow-x: auto; }
+.dd-runs, .dd-tscroll .em-table { width: 100%; min-width: 880px; border-collapse: collapse; }
+.dd-runs caption, .dd-tscroll .em-table caption { text-align: start; padding: 0 0 .75rem; font-family: var(--font-mono); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); }
+.dd-runs th, .dd-runs td { padding: .5rem .75rem; text-align: start; vertical-align: middle; border-bottom: var(--rule) solid var(--border-subtle); }
+.dd-runs thead th { padding: 0; border-bottom: var(--border-width) solid var(--border); white-space: nowrap; }
+.dd-runs tbody th { font-weight: 600; }
+.dd-sort { display: inline-flex; align-items: center; gap: .35rem; min-height: var(--target-min); padding: 0 .75rem; font-family: var(--font-mono); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; color: var(--text); background: none; border: 0; border-radius: 0; cursor: pointer; }
+.dd-sort-icon { min-width: 1ch; }
+.dd-runs tbody tr:focus-within { background: var(--surface-muted); box-shadow: inset var(--border-width-strong) 0 0 var(--accent); }
+.dd-runs tbody tr:focus-within > :first-child { box-shadow: inset var(--border-width-strong) 0 0 var(--accent); }
+.dd-commit { display: flex; flex-direction: column; }
+.dd-commit code { font-size: .85rem; }
 .dd-msg { color: var(--text-muted); }
-.dd-empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); padding: var(--space-4) 0; white-space: normal; }
+.dd-runs code { font-size: .85rem; overflow-wrap: anywhere; }
+.dd-app .dd-open { min-height: var(--target-min); white-space: nowrap; }
+
+/* Table states */
+.dd-empty { display: grid; gap: .75rem; justify-items: start; padding: 1rem 0; border-top: var(--border-width) solid var(--border); }
 .dd-empty p { margin: 0; }
-.dd-skel-row td { padding-block: var(--space-3); }
-.dd-skel-line { display: block; height: var(--space-3); border-radius: var(--radius-full); background: var(--surface-muted); }
-.dd-footer { padding: var(--space-4); border-top: var(--border-width, 1px) solid var(--border-subtle); font-size: var(--text-xs); color: var(--text-muted); }
-.dd-footer a { color: var(--text); display: inline-flex; align-items: center; min-height: var(--target-min, 44px); }
-.em-tablist { overflow-x: auto; }
+.dd-loaderr { display: grid; gap: .5rem; justify-items: start; margin-bottom: 1rem; padding: 1rem 0; border-top: var(--border-width) solid var(--danger); }
+.dd-loaderr h2 { margin: 0; font-family: var(--font-display); font-size: 1.5rem; color: var(--danger); }
+.dd-loaderr p { margin: 0; }
+.dd-skel-row td { padding-block: 1rem; }
+.dd-skel-line { display: block; height: .75rem; border-radius: var(--radius-full); background: var(--surface-muted); }
 
-/* Alert banner */
-.dd-banner--alert { border-color: var(--danger); border-inline-start-width: var(--border-width-strong, 4px); }
-.dd-alert-icon { color: var(--danger); }
+/* Footer */
+.dd-footer { border-top: var(--rule) solid var(--border-subtle); font-size: 1rem; color: var(--text-muted); }
+.dd-footer p { margin: 0; padding-block: 1rem; }
+.dd-footer a { display: inline-flex; align-items: center; min-height: var(--target-min); color: var(--text); }
 
-/* Log drawer: a side panel at 1024px+, the Ember Modal below that. */
-.dd-drawer { position: fixed; inset-block: 0; inset-inline-end: 0; width: min(40rem, 45vw); display: flex; flex-direction: column; background: var(--surface); border-inline-start: var(--border-width, 1px) solid var(--border); z-index: 20; overflow: auto; }
-.dd-app--drawer .dd-main, .dd-app--drawer .dd-footer { width: auto; margin-inline: 0 min(40rem, 45vw); }
-.dd-drawer-head { padding: var(--space-4) var(--space-5); border-block-end: var(--border-width, 1px) solid var(--border-subtle); }
-.dd-drawer-head h2 { margin: 0; font-size: var(--text-lg); overflow-wrap: anywhere; }
-.dd-drawer-body { flex: 1; padding: var(--space-4) var(--space-5); }
-.dd-drawer-foot { display: flex; justify-content: flex-end; padding: var(--space-3) var(--space-5); border-block-start: var(--border-width, 1px) solid var(--border-subtle); position: sticky; bottom: 0; background: var(--surface); }
-.dd-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: var(--space-3); margin: 0 0 var(--space-4); }
-.dd-facts dt { font-size: var(--text-xs); color: var(--text-muted); }
-.dd-facts dd { margin: 0; overflow-wrap: anywhere; }
-.dd-run-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+/* Dialogs (H-4): native <dialog> with showModal() at every width. Centered below 1024px; the run log is a right drawer from 1024px. */
+.dd-dialog { box-sizing: border-box; width: min(680px, 100vw - 2rem); max-width: none; max-height: calc(100vh - 2rem); padding: 0; overflow: auto; background: var(--color-bg); color: var(--text); border: var(--border-width) solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-overlay); font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.6; }
+.dd-dialog::backdrop { background: var(--scrim); }
+.dd-dialog-head { padding: 1.25rem 1.25rem .5rem; }
+.dd-dialog-head h2 { margin: 0; font-family: var(--font-display); font-size: 2rem; line-height: 1.1; overflow-wrap: anywhere; }
+.dd-dialog-body { padding: 0 1.25rem 1.25rem; }
+.dd-run-status { margin: 0 0 .5rem; }
+.dd-run-status .dd-status { vertical-align: middle; }
+.dd-run-commit { margin: 0 0 1rem; overflow-wrap: anywhere; }
+.dd-run-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .75rem; margin-bottom: 1rem; }
+.dd-with-hint { display: inline-flex; flex-direction: column; align-items: flex-start; }
 /* DASH-MODAL-TOAST: the Copy link label swap keeps the button's width (both labels share one grid cell; the inactive one
-   is hidden), and the in-dialog status line reserves two lines while empty (the failure text wraps to two at 320), so nothing moves. No transition. */
+   is hidden), and the status line reserves two lines while empty (the failure text wraps to two at 320), so nothing moves. No transition. */
 .dd-swap { display: inline-grid; }
 .dd-swap > span { grid-area: 1 / 1; }
 .dd-swap > .dd-swap-off { visibility: hidden; }
-.dd-copy-status { margin: calc(-1 * var(--space-2)) 0 var(--space-4); font-size: var(--text-sm); line-height: 1.5; min-height: 3em; color: var(--text); }
-.dd-log-title { font-size: var(--text-base); margin: 0 0 var(--space-2); }
-.dd-log { list-style: none; margin: 0; padding: var(--space-2) 0; background: var(--surface-muted); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: var(--text-xs); overflow-x: auto; }
-.dd-log li { display: flex; gap: var(--space-3); padding: 0 var(--space-3); white-space: pre-wrap; overflow-wrap: anywhere; }
-.dd-ln { flex: none; min-width: 2.5ch; text-align: end; color: var(--text-muted); user-select: none; }
-.dd-log-error { font-weight: var(--weight-semibold); }
-.dd-log-error code { color: var(--danger); }
+.dd-copy-status { margin: -.25rem 0 1rem; font-size: .9rem; line-height: 1.5; min-height: 3em; color: var(--text); }
+.dd-run-link { margin: 0 0 1rem; font-family: var(--font-mono); font-size: .85rem; user-select: all; overflow-wrap: anywhere; }
+.dd-log-region { overflow-x: auto; padding: .75rem 0; background: var(--surface-muted); border-top: var(--border-width) solid var(--border); }
+.dd-log-region > p, .dd-log-error-block { margin: 0; padding: 0 1rem; }
+.dd-log-error-block { display: grid; gap: .5rem; justify-items: start; }
+.dd-log-error-block p { margin: 0; color: var(--danger); font-weight: 700; }
+.dd-log { margin: 0; padding: 0 1rem 0 3.5rem; font-family: var(--font-mono); font-size: .85rem; }
+.dd-log li { white-space: pre-wrap; overflow-wrap: anywhere; }
+.dd-log li::marker { color: var(--text-muted); }
 .dd-log code { font-family: inherit; }
-.em-modal .dd-run-actions .em-btn { flex: 1 1 auto; }
-/* Ember v0.2.2 gap: a long modal title squeezes the close button below 44px at 320px. Reported to the Ember owner. */
-.em-modal-head > .em-btn { flex: none; }
-.em-modal-title { min-width: 0; overflow-wrap: anywhere; }
-/* Ember v0.2.2 gap (DASH-TARGETS): small buttons such as the toast's Dismiss widen their hit area with a ::before inset
-   by -4px, but it starts inside the 1px border, so a 36px icon button gets a 42x42 target. Grow the inset to reach
-   --target-min (never less than Ember's -4px). Hit area only; nothing visible changes.
-   Fixed upstream in a11y-design-system #36, to be removed when the dashboard moves to Ember v0.3 (DASH-EMBER-V03). */
-.ember .em-btn--sm::before { inset: min(-4px, calc((100% - var(--target-min, 44px)) / 2)); }
+.dd-log-error { font-weight: 700; }
+.dd-log-error code { color: var(--danger); }
+.dd-dialog .em-toast-region, .dd-dialog [class*="em-toast"] { font-size: 1rem; }
 
-/* Shortcuts dialog */
-.dd-keys { width: 100%; border-collapse: collapse; margin-top: var(--space-4); }
-.dd-keys th, .dd-keys td { text-align: start; padding: var(--space-2) var(--space-3); border-block-end: var(--border-width, 1px) solid var(--border-subtle); }
-.dd-keys thead th { font-size: var(--text-xs); color: var(--text-muted); }
-.dd-keys kbd { font-family: var(--font-mono); padding: 0 var(--space-2); border: var(--border-width, 1px) solid var(--border); border-radius: var(--radius-sm); background: var(--surface-muted); }
-.dd-pending { visibility: hidden; }
+/* Shortcuts dialog key list */
+.dd-keys { margin: 1rem 0; }
+.dd-keys > div { display: flex; gap: 1rem; padding: .5rem 0; border-bottom: var(--rule) solid var(--border-subtle); }
+.dd-keys dt { min-width: 4.5rem; }
+.dd-keys dd { margin: 0; }
+.dd-keys kbd { padding: 0 .4rem; border: var(--rule) solid var(--border); border-radius: var(--radius-sm); }
+.dd-dialog .em-check { min-height: var(--target-min); }
+
+@media (min-width: 480px) {
+  .dd-kq { display: none; }
+  .dd-kl { display: inline; }
+}
+@media (min-width: 700px) {
+  .dd-filters { grid-template-columns: 1fr 1fr 1fr auto; align-items: start; }
+  .dd-clearf { padding-top: calc(1.6em + .35rem); }
+}
+@media (min-width: 900px) {
+  html { scroll-padding-top: 6rem; }
+  .dd-wrap { padding-inline: 2.5rem; }
+  .dd-envbar { grid-template-columns: 1fr minmax(0, 22rem); align-items: end; }
+}
+@media (min-width: 1024px) {
+  .dd-run-dialog { margin: 0 0 0 auto; height: 100vh; max-height: 100vh; width: min(600px, 48vw); border: 0; padding-left: 6px; background: linear-gradient(to right, var(--accent) 6px, var(--color-bg) 6px); /* 6px --accent left edge (H-1) */ transition: transform var(--duration-base) var(--ease-standard), opacity var(--duration-base) var(--ease-standard); }
+  .dd-run-dialog .dd-dialog-head h2 { font-size: 1.7rem; }
+  @starting-style { .dd-run-dialog[open] { transform: translateX(40px); opacity: 0; } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dd-run-dialog { transition: none; }
+}

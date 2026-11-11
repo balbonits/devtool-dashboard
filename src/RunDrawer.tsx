@@ -1,5 +1,5 @@
 import { Button, Modal, useToast } from 'ember-ui';
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { StatusBadge } from './components';
 import { ago, duration } from './lib/format';
 import { ENVS, type Run } from './lib/types';
@@ -7,7 +7,7 @@ import { ENVS, type Run } from './lib/types';
 /** Log drawer: a side panel on wide screens (non-modal, page stays usable) and a modal dialog on narrow ones. */
 export function RunDrawer({ run, wide, onClose }: { run: Run | undefined; wide: boolean; onClose: () => void }) {
   const title = run ? `${run.service} ${run.sha}` : 'Run not found';
-  const body = run ? <RunBody run={run} /> : <p>This run isn't in the demo data. It may be from an older link.</p>;
+  const body = run ? <RunBody run={run} modal={!wide} /> : <p>This run isn't in the demo data. It may be from an older link.</p>;
   const close = <Button variant="secondary" onClick={onClose}>Close</Button>;
 
   if (!wide) return <Modal open onClose={onClose} title={title} actions={close}>{body}</Modal>;
@@ -38,8 +38,21 @@ function SidePanel({ title, onClose, actions, children }: { title: string; onClo
   );
 }
 
-function RunBody({ run }: { run: Run }) {
+/** Copy-link feedback while the run log is a modal dialog (DASH-MODAL-TOAST). The page toast renders outside the modal,
+ *  where it's inert and may not be announced, so inside a modal the confirmation is a visible role=status line in the
+ *  dialog (rendered empty on open, then filled, so it's announced) and the button label reads "Copied" for 2 s. The
+ *  label swap is visual only: the button's name is always its visible text, and the status line is the announcement. */
+const COPIED_MS = 2000;
+const COPY_OK = 'Link copied';
+const COPY_FAIL = "Couldn't copy link. Copy it from the address bar instead.";
+
+function RunBody({ run, modal }: { run: Run; modal: boolean }) {
   const toast = useToast();
+  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState('');
+  const labelTimer = useRef<number | undefined>(undefined);
+  const statusTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => { window.clearTimeout(labelTimer.current); window.clearTimeout(statusTimer.current); }, []);
   const firstError = run.log.findIndex((l) => l.startsWith('ERROR'));
   const env = ENVS.find((e) => e.id === run.env)!.label;
 
@@ -48,13 +61,27 @@ function RunBody({ run }: { run: Run }) {
     el?.scrollIntoView({ block: 'center' });
     el?.focus();
   };
-  const copy = async () => {
+  const copy = async (button: HTMLElement) => {
+    // The real state at click time: is this button inside an open modal dialog?
+    const inModal = !!button.closest('dialog')?.matches(':modal');
+    let ok = true;
     try {
       await navigator.clipboard.writeText(window.location.href);
-      toast({ tone: 'success', title: 'Link copied' });
     } catch {
-      toast({ tone: 'error', title: "Couldn't copy the link", message: ' Copy it from the address bar instead.' });
+      ok = false;
     }
+    if (!inModal) {
+      if (ok) toast({ tone: 'success', title: 'Link copied' });
+      else toast({ tone: 'error', title: "Couldn't copy the link", message: ' Copy it from the address bar instead.' });
+      return;
+    }
+    window.clearTimeout(labelTimer.current);
+    setCopied(ok);
+    if (ok) labelTimer.current = window.setTimeout(() => setCopied(false), COPIED_MS);
+    // Clear, then set on a later task, so a repeat copy changes the text and is announced again.
+    window.clearTimeout(statusTimer.current);
+    setStatus('');
+    statusTimer.current = window.setTimeout(() => setStatus(ok ? COPY_OK : COPY_FAIL), 100);
   };
 
   return (
@@ -70,8 +97,14 @@ function RunBody({ run }: { run: Run }) {
       </dl>
       <div className="dd-run-actions">
         {firstError >= 0 && <Button variant="secondary" onClick={jump}>Jump to first error</Button>}
-        <Button variant="secondary" onClick={copy}>Copy link to this run</Button>
+        <Button variant="secondary" onClick={(e) => void copy(e.currentTarget)}>
+          <span className="dd-swap">
+            <span className={copied ? 'dd-swap-off' : undefined} aria-hidden={copied || undefined}>Copy link to this run</span>
+            <span className={copied ? undefined : 'dd-swap-off'} aria-hidden={copied ? undefined : true}>Copied</span>
+          </span>
+        </Button>
       </div>
+      {modal && <p className="dd-copy-status" role="status">{status}</p>}
       <h3 className="dd-log-title" id={`dd-log-${run.id}`}>Log</h3>
       <ol className="dd-log" aria-labelledby={`dd-log-${run.id}`}>
         {run.log.map((line, i) => (

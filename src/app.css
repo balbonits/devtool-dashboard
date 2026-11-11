@@ -52,6 +52,12 @@ body { margin: 0; background: var(--color-bg); }
 .dd-facts dt { font-size: var(--text-xs); color: var(--text-muted); }
 .dd-facts dd { margin: 0; overflow-wrap: anywhere; }
 .dd-run-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-bottom: var(--space-4); }
+/* DASH-MODAL-TOAST: the Copy link label swap keeps the button's width (both labels share one grid cell; the inactive one
+   is hidden), and the in-dialog status line reserves two lines while empty (the failure text wraps to two at 320), so nothing moves. No transition. */
+.dd-swap { display: inline-grid; }
+.dd-swap > span { grid-area: 1 / 1; }
+.dd-swap > .dd-swap-off { visibility: hidden; }
+.dd-copy-status { margin: calc(-1 * var(--space-2)) 0 var(--space-4); font-size: var(--text-sm); line-height: 1.5; min-height: 3em; color: var(--text); }
 .dd-log-title { font-size: var(--text-base); margin: 0 0 var(--space-2); }
 .dd-log { list-style: none; margin: 0; padding: var(--space-2) 0; background: var(--surface-muted); border-radius: var(--radius-md); font-family: var(--font-mono); font-size: var(--text-xs); overflow-x: auto; }
 .dd-log li { display: flex; gap: var(--space-3); padding: 0 var(--space-3); white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -66,7 +72,7 @@ body { margin: 0; background: var(--color-bg); }
 /* Ember v0.2.2 gap (DASH-TARGETS): small buttons such as the toast's Dismiss widen their hit area with a ::before inset
    by -4px, but it starts inside the 1px border, so a 36px icon button gets a 42x42 target. Grow the inset to reach
    --target-min (never less than Ember's -4px). Hit area only; nothing visible changes.
-   Remove once this app consumes an Ember build with HIT-PATCH (a11y-design-system #36). */
+   Fixed upstream in a11y-design-system #36, to be removed when the dashboard moves to Ember v0.3 (DASH-EMBER-V03). */
 .ember .em-btn--sm::before { inset: min(-4px, calc((100% - var(--target-min, 44px)) / 2)); }
 
 /* Shortcuts dialog */

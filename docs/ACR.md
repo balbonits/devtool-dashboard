@@ -62,7 +62,7 @@ WCAG 2.0 A/AA rows are the Section 508 baseline. Rows marked 2.1 or 2.2 are extr
 | 2.5.3 Label in Name (2.1) | A | Supports | Accessible names contain the visible label ("Log" in "Open log for ..."). |
 | 2.5.4 Motion Actuation (2.1) | A | Not Applicable | No motion input. |
 | 2.5.7 Dragging Movements (2.2) | AA | Not Applicable | No dragging. |
-| 2.5.8 Target Size (Minimum) (2.2) | AA | Supports | All targets meet WCAG 2.5.8 (24px). The project aims for 44px; the environment tabs are 43px effective due to an Ember v0.2.2 tablist clip, fixed upstream in a11y-design-system #36 and removed here by DASH-EMBER-BUMP. |
+| 2.5.8 Target Size (Minimum) (2.2) | AA | Supports | All targets meet WCAG 2.5.8 (24px). The project aims for 44px; the environment tabs are 43px effective due to an Ember v0.2.2 tablist clip, fixed upstream in a11y-design-system #36, to be removed when the dashboard moves to Ember v0.3. |
 | 3.1.1 Language of Page | A | Supports | `lang="en"`. |
 | 3.1.2 Language of Parts | AA | Not Applicable | No other-language passages. |
 | 3.2.1 On Focus | A | Supports | Focus causes no context change. |
@@ -77,7 +77,7 @@ WCAG 2.0 A/AA rows are the Section 508 baseline. Rows marked 2.1 or 2.2 are extr
 | 3.3.7 Redundant Entry (2.2) | A | Not Applicable | No multi-step entry. |
 | 3.3.8 Accessible Authentication (Minimum) (2.2) | AA | Not Applicable | No sign-in. |
 | 4.1.2 Name, Role, Value | A | Supports | Native controls, WAI-ARIA tabs and sortable table headers from Ember UI, native dialogs. axe passes. |
-| 4.1.3 Status Messages (2.1) | AA | Partially Supports | While loading, one polite `role=status` says "Loading runs" and the table is `aria-busy`. The "n of m runs shown" count updates on screen at once, and its `role=status` copy speaks about 500 ms after filtering settles, so typing doesn't queue one message per key. The failure banner's `role=alert` text goes in just after the region mounts, and only for a new set of failures in the session. The load error uses `role=alert`, and toasts use Ember's live region (unit tests). Gap: below the drawer breakpoint the run log is a modal dialog and the toast renders outside it, so the "Copy link to this run" confirmation is inert and likely not announced while the modal is open, until DASH-MODAL-TOAST ships. Not yet verified with a screen reader; this moves to Supports after the screen-reader pass. |
+| 4.1.3 Status Messages (2.1) | AA | Partially Supports | While loading, one polite `role=status` says "Loading runs" and the table is `aria-busy`. The "n of m runs shown" count updates on screen at once, and its `role=status` copy speaks about 500 ms after filtering settles, so typing doesn't queue one message per key. The failure banner's `role=alert` text goes in just after the region mounts, and only for a new set of failures in the session. The load error uses `role=alert`, and toasts use Ember's live region (unit tests). While the run log is a modal dialog (below the drawer breakpoint), "Copy link to this run" confirms in a visible polite `role=status` line inside the dialog, rendered empty and then filled so it's announced, and re-announced on each copy; the page toast is used only when no modal is open (e2e). Not yet verified with a screen reader; this moves to Supports after the screen-reader pass. |
 
 ## Revised Section 508 Chapter 3: Functional Performance Criteria
 | Criteria | Conformance | Remarks |

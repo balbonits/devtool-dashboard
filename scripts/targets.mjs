@@ -9,22 +9,26 @@ export const MIN = 44;
 
 /** Known gaps the guard allows, narrowly: a control matching `selector` may be `floor` px tall (so floor - 1 still
  *  fails) but must stay under 44 (so the check fails once it's fixed and the entry can't go stale).
- *  DASH-EMBER-BUMP removes this entry (and the .em-btn--sm::before override in src/app.css) once the app uses an Ember
- *  build with HIT-PATCH, a11y-design-system #36: https://github.com/balbonits/a11y-design-system/pull/36 */
+ *  This entry and the .em-btn--sm::before override in src/app.css are fixed upstream in a11y-design-system #36, to be removed when the dashboard moves to Ember v0.3
+ *  (DASH-EMBER-V03): https://github.com/balbonits/a11y-design-system/pull/36 */
 export const KNOWN_GAPS = [
   { id: 'em-tab', selector: '.em-tab', floor: 43,
-    why: "Ember v0.2.2 .em-tab has margin-bottom:-1px over the .em-tablist border, and the tablist's overflow:auto clips it to 43px; fixed upstream in Ember's HIT-PATCH (a11y-design-system #36), removed here by DASH-EMBER-BUMP" },
+    why: "Ember v0.2.2 .em-tab has margin-bottom:-1px over the .em-tablist border, and the tablist's overflow:auto clips it to 43px; fixed upstream in a11y-design-system #36, to be removed when the dashboard moves to Ember v0.3 (DASH-EMBER-V03)" },
 ];
 
-/** Page states to open, as [name, path, open(page) | null, scope selector]. */
+/** Page states to open, as [name, path, open(page) | null, scope selector, min width or undefined]. */
 export const STATES = [
   ['page', '', null, 'body'],
   ['run log (drawer or dialog)', '#/run/run-01', null, '.dd-drawer, dialog[open]'],
   ['shortcuts dialog', '', async (p) => { await p.getByRole('button', { name: 'Keyboard shortcuts' }).click(); await p.locator('dialog[open]').waitFor(); }, 'dialog[open]'],
-  ['toast', '#/run/run-01', async (p) => { await p.getByRole('button', { name: 'Copy link to this run' }).click(); await p.locator('.em-toast').first().waitFor(); }, '.em-toast-viewport'],
+  ['toast', '#/run/run-01', async (p) => { await p.getByRole('button', { name: 'Copy link to this run' }).click(); await p.locator('.em-toast').first().waitFor(); }, '.em-toast-viewport', 1024],
   ['no results', '?q=no-such-run', null, 'main'],
   ['load error', '?state=error', null, 'main'],
 ];
+
+/** Whether a state applies at `width`. The toast state is 1024px+ only (DASH-MODAL-TOAST): below the drawer breakpoint the
+ *  run log is a modal dialog, and Copy link confirms in the dialog's own role=status line instead of a page toast. */
+export const appliesAt = (state, width) => !state[4] || width >= state[4];
 
 /** Runs in the page. Returns one entry per standalone control inside `scope`. */
 export function measure({ scope, min, gaps = [] }) {

@@ -4,7 +4,7 @@
 // Usage: node scripts/target-audit.mjs [baseUrl] [widths]
 //   e.g. node scripts/target-audit.mjs https://jdilig.me/ux/dev-dashboard/ 320,375,1280
 import { chromium } from 'playwright-core';
-import { STATES, KNOWN_GAPS, measureState } from './targets.mjs';
+import { STATES, KNOWN_GAPS, appliesAt, measureState } from './targets.mjs';
 
 const base = (process.argv[2] || 'http://127.0.0.1:4174/ux/dev-dashboard/').replace(/\/?$/, '/');
 const widths = (process.argv[3] || '320,375,1280').split(',').map(Number);
@@ -12,6 +12,7 @@ const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH 
 const rows = new Map();
 let bad = 0, gaps = 0;
 for (const state of STATES) for (const width of widths) {
+  if (!appliesAt(state, width)) continue; // toast: 1024px+ only, see appliesAt
   const seen = new Map();
   for (const m of await measureState(browser, base, width, state)) {
     const n = (seen.get(m.control) || 0) + 1; seen.set(m.control, n);

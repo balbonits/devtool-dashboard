@@ -154,11 +154,11 @@ code.
 
 1. **DASH-THEME** (Creatives, then CA): the theme spec above as a dev-ready handoff, mobile-first, with annotated
    shots.
-2. **DASH-EMBER-V03** (Front End): bump `ember-ui` to a tag that contains #36 (a v0.3.x tag is John's call; until
-   then pin `346ad36`), register and apply the dashboard theme, and add any font packages John approves. Done means
-   the 24-pair pixel diff is near zero, except for the tab underline and the hit areas.
-3. **DASH-EMBER-CLEANUP** (Front End, may fold into 2): remove the `KNOWN_GAPS` `.em-tab` entry in
-   `scripts/targets.mjs` and the `.ember .em-btn--sm::before` override in `src/app.css`; confirm the tabs and the
-   toast Dismiss are ≥44 effective at 320/375/1280, light and dark; set ACR 2.5.8 to "All targets meet WCAG 2.5.8
-   (24px), and every standalone control meets the project's 44px goal."
-4. **Re-gate:** lint, typecheck, vitest, build, e2e, a11y (axe 0), target-audit, then QA, then CA.
+2. **DASH-EMBER-V03** (Front End; on the board, blocked on DASH-THEME): bump `ember-ui` to a tag that contains #36
+   (a v0.3.x tag is John's call; until then pin `346ad36`), register and apply the dashboard theme, and add any font
+   packages John approves. In the same card, remove the `KNOWN_GAPS` `.em-tab` entry in `scripts/targets.mjs` and the
+   `.ember .em-btn--sm::before` override in `src/app.css`; confirm the tabs and the toast Dismiss are ≥44 effective at
+   320/375/1280, light and dark; set ACR 2.5.8 to "All targets meet WCAG 2.5.8 (24px), and every standalone control
+   meets the project's 44px goal." Done means the 24-pair pixel diff is near zero, except for the tab underline and
+   the hit areas.
+3. **Re-gate:** lint, typecheck, vitest, build, e2e, a11y (axe 0), target-audit, then QA, then CA.

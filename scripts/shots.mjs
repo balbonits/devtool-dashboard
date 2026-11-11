@@ -1,4 +1,4 @@
-// Milestone screenshots for PROGRESS.md. Usage: node scripts/shots.mjs <wireframe|prototype|final> [baseUrl]
+// Milestone screenshots for PROGRESS.md. Usage: node scripts/shots.mjs <wireframe|prototype|prototype-2|final> [baseUrl]
 import { chromium } from 'playwright-core';
 import { mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +19,10 @@ async function shot(name, url, { width = 1280, height = 800, scheme = 'light', f
 }
 if (milestone === 'wireframe') {
   await shot('wireframes', new URL('../docs/wireframes/wireframes.html', import.meta.url).href, { width: 1340 });
+} else if (milestone === 'prototype-2') {
+  await shot('run-log-desktop', base + '?status=failed#/run/run-01', { full: false });
+  await shot('run-log-mobile-dark', base + '#/run/run-01', { width: 390, height: 844, scheme: 'dark', full: false });
+  await shot('alert-banner-mobile', base, { width: 390, height: 844, full: false });
 } else {
   await shot('production-desktop', base);
   await shot('production-mobile-dark', base, { width: 390, height: 844, scheme: 'dark', full: false });

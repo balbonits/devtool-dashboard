@@ -18,7 +18,8 @@
     "lint": "eslint . && node scripts/token-lint.mjs",
     "test": "vitest run",
     "test:a11y": "node scripts/a11y.mjs",
-    "lint:tokens": "node scripts/token-lint.mjs"
+    "lint:tokens": "node scripts/token-lint.mjs",
+    "test:e2e": "node scripts/e2e.mjs"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

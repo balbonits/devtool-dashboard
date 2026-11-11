@@ -1,5 +1,8 @@
 import { Button, Input, Select, Table, Tabs, ToastProvider, type Column } from 'ember-ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { AlertBanner, recentProdFailures } from './AlertBanner';
+import { RunDrawer } from './RunDrawer';
+import { closeRun, openRun, useRoute, useWide } from './lib/route';
 import { LoadingTable, StatusBadge } from './components';
 import { allGreen, makeRuns } from './lib/data';
 import { DEFAULT_FILTERS, applyFilters, hasFilters, readFilters, services, writeFilters, type Filters } from './lib/filters';
@@ -54,12 +57,41 @@ function useFilters(): [Filters, (patch: Partial<Filters>) => void] {
 function Dashboard({ demo, initialRuns }: { demo: DemoState; initialRuns?: Run[] }) {
   const { load, retry } = useRuns(demo, initialRuns);
   const [filters, setFilters] = useFilters();
+  const route = useRoute();
+  const wide = useWide();
+  const [tabsKey, setTabsKey] = useState(0); // remounts the uncontrolled Tabs only when code (not the user) changes the env
+  const lastRun = useRef<string | null>(null);
   const envLabel = ENVS.find((e) => e.id === filters.env)!.label;
+  const runs = load.kind === 'ready' ? load.runs : [];
+  const open = route.name === 'run' ? runs.find((r) => r.id === route.id) : undefined;
+  const failures = useMemo(() => recentProdFailures(load.kind === 'ready' ? load.runs : []), [load]);
 
-  useEffect(() => { document.title = `Deploys · ${envLabel} · Dev dashboard prototype`; }, [envLabel]);
+  // R-5: every route change updates the title; closing the drawer returns focus to the row it came from (or the H1).
+  useEffect(() => {
+    if (route.name === 'run') {
+      lastRun.current = route.id;
+      document.title = open ? `${open.service} ${open.sha} · Run log · Deploys` : 'Run not found · Deploys';
+      return;
+    }
+    document.title = `Deploys · ${envLabel} · Dev dashboard prototype`;
+    if (lastRun.current) {
+      const id = lastRun.current;
+      lastRun.current = null;
+      requestAnimationFrame(() => {
+        const row = document.getElementById(`logs-${id}`);
+        if (row) row.focus(); else document.querySelector<HTMLElement>('#main h1')?.focus();
+      });
+    }
+  }, [route, open, envLabel]);
+
+  const viewFailure = (run: Run) => {
+    if (filters.env !== run.env) setTabsKey((k) => k + 1);
+    setFilters({ env: run.env, status: 'failed', service: run.service, branch: '', q: '' });
+    openRun(run.id);
+  };
 
   return (
-    <div className="ember dd-app">
+    <div className={`ember dd-app${route.name === 'run' && wide ? ' dd-app--drawer' : ''}`}>
       <a className="dd-skip em-focus" href="#main" onClick={(e) => { e.preventDefault(); document.getElementById('main')?.focus(); }}>Skip to content</a>
       <aside aria-label="About this prototype"><p className="dd-demo-note">
         Prototype with fictional services and runs. Nothing here is real data.
@@ -78,7 +110,9 @@ function Dashboard({ demo, initialRuns }: { demo: DemoState; initialRuns?: Run[]
             <Button variant="secondary" onClick={retry}>Retry</Button>
           </div>
         )}
+        {load.kind === 'ready' && <AlertBanner failures={failures} onView={viewFailure} />}
         <Tabs
+          key={tabsKey}
           label="Environment"
           defaultTab={filters.env}
           onChange={(id) => setFilters({ env: id as Filters['env'] })}
@@ -96,6 +130,7 @@ function Dashboard({ demo, initialRuns }: { demo: DemoState; initialRuns?: Run[]
           <a href="/ux/">All UX case studies</a> · <a href="https://github.com/balbonits/devtool-dashboard">Source on GitHub</a>
         </p>
       </footer>
+      {route.name === 'run' && load.kind === 'ready' && <RunDrawer run={open} wide={wide} onClose={closeRun} />}
     </div>
   );
 }
@@ -108,6 +143,12 @@ const columns: Column<Run>[] = [
   { key: 'author', header: 'Author', sortable: true },
   { key: 'started', header: 'Started', sortable: true, render: (r) => <time dateTime={r.started} title={new Date(r.started).toLocaleString()}>{ago(r.started)}</time> },
   { key: 'duration', header: 'Duration', sortable: true, render: (r) => duration(r.duration) },
+  {
+    key: 'id', header: 'Actions',
+    render: (r) => (
+      <Button id={`logs-${r.id}`} variant="secondary" onClick={() => openRun(r.id)} aria-label={`Open log for ${r.service} ${r.sha}`}>Log</Button>
+    ),
+  },
 ];
 
 function EnvPanel({ load, filters, setFilters }: { load: Load; filters: Filters; setFilters: (p: Partial<Filters>) => void }) {

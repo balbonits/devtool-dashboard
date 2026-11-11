@@ -2,6 +2,8 @@ import { Button, Input, Select, Table, Tabs, ToastProvider, type Column } from '
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertBanner, recentProdFailures } from './AlertBanner';
 import { RunDrawer } from './RunDrawer';
+import { ShortcutsDialog } from './ShortcutsDialog';
+import { ariaFor, moveRow, useShortcutSetting, useShortcuts, type ShortcutActions } from './lib/shortcuts';
 import { closeRun, openRun, useRoute, useWide } from './lib/route';
 import { LoadingTable, StatusBadge } from './components';
 import { allGreen, makeRuns } from './lib/data';
@@ -61,6 +63,17 @@ function Dashboard({ demo, initialRuns }: { demo: DemoState; initialRuns?: Run[]
   const wide = useWide();
   const [tabsKey, setTabsKey] = useState(0); // remounts the uncontrolled Tabs only when code (not the user) changes the env
   const lastRun = useRef<string | null>(null);
+  const [keysOpen, setKeysOpen] = useState(false);
+  const [keysOn, setKeysOn] = useShortcutSetting();
+  const actions = useMemo<ShortcutActions>(() => ({
+    // The target is whichever control advertises the key, so the aria-keyshortcuts and the behavior can't drift apart.
+    '/': () => document.querySelector<HTMLElement>(`#main input[aria-keyshortcuts="${ariaFor('/')}"]`)?.focus(),
+    f: () => document.querySelector<HTMLElement>(`#main select[aria-keyshortcuts="${ariaFor('f')}"]`)?.focus(),
+    j: () => moveRow(1),
+    k: () => moveRow(-1),
+    '?': () => setKeysOpen(true),
+  }), []);
+  useShortcuts(keysOn, actions);
   const envLabel = ENVS.find((e) => e.id === filters.env)!.label;
   const runs = load.kind === 'ready' ? load.runs : [];
   const open = route.name === 'run' ? runs.find((r) => r.id === route.id) : undefined;
@@ -101,8 +114,9 @@ function Dashboard({ demo, initialRuns }: { demo: DemoState; initialRuns?: Run[]
         <header className="dd-head">
           <h1 className="em-focus" tabIndex={-1}>Deploys</h1>
           <form role="search" className="dd-search" onSubmit={(e) => e.preventDefault()}>
-            <Input label="Search runs" type="search" placeholder="Service, commit, branch or author" value={filters.q} onChange={(e) => setFilters({ q: e.target.value })} />
+            <Input aria-keyshortcuts={ariaFor('/')} label="Search runs" type="search" placeholder="Service, commit, branch or author" value={filters.q} onChange={(e) => setFilters({ q: e.target.value })} />
           </form>
+          <Button variant="secondary" aria-keyshortcuts={ariaFor('?')} onClick={() => setKeysOpen(true)}>Keyboard shortcuts</Button>
         </header>
         {load.kind === 'error' && (
           <div role="alert" className="dd-banner dd-banner--error">
@@ -130,6 +144,7 @@ function Dashboard({ demo, initialRuns }: { demo: DemoState; initialRuns?: Run[]
           <a href="/ux/">All UX case studies</a> · <a href="https://github.com/balbonits/devtool-dashboard">Source on GitHub</a>
         </p>
       </footer>
+      <ShortcutsDialog open={keysOpen} onClose={() => setKeysOpen(false)} enabled={keysOn} setEnabled={setKeysOn} />
       {route.name === 'run' && load.kind === 'ready' && <RunDrawer run={open} wide={wide} onClose={closeRun} />}
     </div>
   );
@@ -146,7 +161,7 @@ const columns: Column<Run>[] = [
   {
     key: 'id', header: 'Actions',
     render: (r) => (
-      <Button id={`logs-${r.id}`} variant="secondary" onClick={() => openRun(r.id)} aria-label={`Open log for ${r.service} ${r.sha}`}>Log</Button>
+      <Button id={`logs-${r.id}`} aria-keyshortcuts={`${ariaFor('j')} ${ariaFor('k')}`} variant="secondary" onClick={() => openRun(r.id)} aria-label={`Open log for ${r.service} ${r.sha}`}>Log</Button>
     ),
   },
 ];
@@ -162,7 +177,7 @@ function EnvPanel({ load, filters, setFilters }: { load: Load; filters: Filters;
   return (
     <>
       <div className="dd-filters" role="group" aria-label="Filters">
-        <Select label="Status" value={filters.status} onChange={(e) => setFilters({ status: e.target.value as Filters['status'] })}>
+        <Select aria-keyshortcuts={ariaFor('f')} label="Status" value={filters.status} onChange={(e) => setFilters({ status: e.target.value as Filters['status'] })}>
           <option value="">All statuses</option>
           {STATUSES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
         </Select>

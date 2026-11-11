@@ -42,7 +42,19 @@ More: [failed filter](docs/screenshots/2026-11-10-prototype-failed-filter.png), 
 |---|---|---|
 | ![Run log side panel next to the filtered list](docs/screenshots/2026-11-10-prototype-2-run-log-desktop.png) | ![Run log dialog on a 390 px phone in dark mode](docs/screenshots/2026-11-10-prototype-2-run-log-mobile-dark.png) | ![Failure alert banner on a 390 px phone](docs/screenshots/2026-11-10-prototype-2-alert-banner-mobile.png) |
 
+### 2026-11-10 - Prototype 3: keyboard shortcuts with an off switch (R-7)
+- `/` search, `f` filters, `j`/`k` next and previous run, Enter opens the focused run's log, Esc closes, `?` opens the shortcuts dialog. A visible Keyboard shortcuts button in the header opens the same dialog.
+- WCAG 2.1.4: a "Single-key shortcuts" checkbox in the dialog turns the single keys off. It is on by default and saved in localStorage under a versioned key; if storage is blocked it falls back to on and keeps the choice for the session. Enter and Esc always work.
+- Single keys never fire in an input, select, textarea or contenteditable, with Ctrl, Alt or Meta held, or while a dialog is open. The page has no `role=application`, and each control carries its key in `aria-keyshortcuts`; `/` and `f` find their target by that attribute, so the two can't drift.
+- The dialog's list is rendered from the same key map the handler uses, and a test checks both. Uses Ember's Checkbox for now; it moves to Ember's Switch when v0.3.1 ships, as a follow-up.
+- Checks: 26 unit and component tests; e2e adds the R-7 cases (typing j in search, j/k/Enter on rows, everything off after a reload, header button still works) and an axe run on the open dialog; the axe sweep is unchanged at 0 failing.
+
+| Shortcuts dialog, desktop | Mobile, dark |
+|---|---|
+| ![Keyboard shortcuts dialog with the Single-key shortcuts checkbox](docs/screenshots/2026-11-10-prototype-3-shortcuts-desktop.png) | ![The same dialog on a 390 px phone in dark mode](docs/screenshots/2026-11-10-prototype-3-shortcuts-mobile-dark.png) |
+
 ## Not done yet
+ACR, keyboard and screen-reader pass, making the repo public, BUILD.json and the jdilig.me case study.
 Keyboard shortcuts and their off switch (R-7), ACR, keyboard and screen-reader pass, making the repo public, BUILD.json and the jdilig.me case study.
 Log drawer, alert banner, run links with title/focus/scroll handling (R-5), keyboard shortcuts and their off switch (R-7), ACR, keyboard and screen-reader pass, secret scan, BUILD.json and the jdilig.me case study.
 

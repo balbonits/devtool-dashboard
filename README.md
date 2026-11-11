@@ -13,7 +13,7 @@ All services, people, commits and logs are **fictional mock data**. There is no 
 - Every run has a log at `#/run/<id>`: a side panel on wide screens, a dialog on phones, with Jump to first error and Copy link. Opening and closing a run updates the page title, moves focus and returns it to the row.
 - A banner flags production deploys that failed in the last hour and jumps straight to the newest one.
 
-Coming next: keyboard shortcuts with an off switch (WCAG 2.1.4). See [PROGRESS.md](PROGRESS.md).
+- Keyboard shortcuts (`/` search, `f` filters, `j`/`k` rows, `?` help) that can be switched off in the shortcuts dialog (WCAG 2.1.4) and never fire while typing. See [PROGRESS.md](PROGRESS.md).
 
 ## Theming
 Every style reads Ember UI semantic tokens (color, spacing, radius, border, type). The dashboard's own theme comes later from the design team and registers on Ember UI; `npm run lint:tokens` fails on `@keyframes`, literal colors, or hardcoded radius, border-width, box-shadow or outline values.
@@ -25,7 +25,7 @@ npm run dev           # http://localhost:5173/ux/dev-dashboard/
 npm run typecheck && npm run lint && npm test
 npm run build && npm run preview
 npm run test:a11y     # axe + overflow + 44px targets at 5 widths, light and dark (needs Chrome and a served build)
-npm run test:e2e      # run links, focus and the log drawer in a real browser (same needs)
+npm run test:e2e      # run links, focus, the log drawer and shortcuts in a real browser (same needs)
 ```
 
 ## License

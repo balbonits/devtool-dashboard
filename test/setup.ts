@@ -7,3 +7,4 @@ if (!window.matchMedia) {
     addEventListener() {}, removeEventListener() {}, addListener() {}, removeListener() {}, dispatchEvent: () => false,
   }) as MediaQueryList;
 }
+Element.prototype.scrollIntoView ??= function () {};

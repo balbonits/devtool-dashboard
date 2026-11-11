@@ -106,46 +106,73 @@ for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
   check(!(await p.getByRole('checkbox', { name: /Single-key shortcuts/ }).isChecked()), `${label}: header button still opens the dialog, setting kept`);
   await p.context().close();
 }
-// DASH-MODAL-TOAST: in the run-log modal (narrow), Copy link gives feedback in place, not via the page toast
-// (which would sit behind the modal, inert). Wide screens (side panel, no modal) keep the toast.
-for (const [label, width, fail] of [['320 modal', 320, false], ['320 modal, copy fails', 320, true], ['1280 drawer', 1280, false], ['1280 drawer, copy fails', 1280, true]]) {
-  const ctx = await browser.newContext({ viewport: { width, height: 800 }, reducedMotion: 'reduce', permissions: ['clipboard-read', 'clipboard-write'] });
+// DASH-MODAL-TOAST: in the run-log modal (narrow), Copy link confirms in a visible role=status line in the dialog, not
+// via the page toast (which would sit behind the modal, inert). The label swap to "Copied" is visual only. Wide screens
+// (side panel, no modal) keep the toast.
+const cases = [];
+for (const width of [320, 375]) for (const scheme of ['light', 'dark']) cases.push([`${width} modal ${scheme}`, width, scheme, false]);
+cases.push(['320 modal, copy fails', 320, 'light', true], ['1280 drawer', 1280, 'light', false], ['1280 drawer, copy fails', 1280, 'light', true]);
+for (const [label, width, colorScheme, fail] of cases) {
+  const ctx = await browser.newContext({ viewport: { width, height: 800 }, colorScheme, reducedMotion: 'reduce', permissions: ['clipboard-read', 'clipboard-write'] });
   if (fail) await ctx.addInitScript(() => { navigator.clipboard.writeText = () => Promise.reject(new Error('denied')); });
   const p = await ctx.newPage();
   await p.goto(base + '#/run/run-01', { waitUntil: 'networkidle' });
-  const scope = width < 1024 ? p.locator('dialog[open]') : p.locator('.dd-drawer');
+  const modal = width < 1024;
+  const scope = modal ? p.locator('dialog[open]') : p.locator('.dd-drawer');
   await scope.waitFor();
-  check((await p.locator('dialog:modal').count()) === (width < 1024 ? 1 : 0), `${label}: run log is ${width < 1024 ? 'a modal dialog' : 'the side panel'}`);
-  const btn = scope.getByRole('button', { name: 'Copy link to this run' });
-  const w0 = (await btn.boundingBox()).width;
+  check((await p.locator('dialog:modal').count()) === (modal ? 1 : 0), `${label}: run log is ${modal ? 'a modal dialog' : 'the side panel'}`);
+  const status = scope.locator('[role=status]');
+  const btn = scope.getByRole('button', { name: 'Copy link to this run', exact: true });
+  const toastCount = () => p.locator('.em-toast-viewport .em-toast').count();
+  if (!modal) {
+    check(await status.count() === 0, `${label}: no in-panel status line`);
+    await btn.click();
+    await p.waitForTimeout(200);
+    check(await toastCount() > 0, `${label}: page toast still shows`);
+    const t = await p.locator('.em-toast-viewport').innerText();
+    check(t.includes(fail ? "Couldn't copy the link" : 'Link copied'), `${label}: toast text unchanged (${JSON.stringify(t.slice(0, 80))})`);
+    check(await btn.count() === 1, `${label}: button label unchanged`);
+    await ctx.close();
+    continue;
+  }
+  check(await status.count() === 1 && (await status.textContent()) === '', `${label}: status line is in the dialog, empty, before the first copy`);
+  const box0 = await btn.boundingBox();
+  const top0 = await scope.locator('.dd-log-title').evaluate((el) => el.offsetTop);
+  const want = fail ? "Couldn't copy link. Copy it from the address bar instead." : 'Link copied';
   await btn.click();
-  await p.waitForTimeout(150);
-  const toasts = await p.locator('.em-toast-viewport .em-toast, .em-toast-viewport [role=status], .em-toast-viewport [role=alert]').count();
-  if (width < 1024) {
-    check(toasts === 0, `${label}: no page toast behind the modal (${toasts})`);
-    const status = await scope.locator('[role=status]').allTextContents();
-    const want = fail ? "Couldn't copy link" : 'Link copied';
-    check(status.some((t) => t.includes(want)), `${label}: status in the dialog says "${want}" (${JSON.stringify(status)})`);
-    if (fail) {
-      check(await btn.count() === 1, `${label}: button keeps its label when the copy fails`);
-    } else {
-      const copied = scope.getByRole('button', { name: 'Copied', exact: true });
-      const named = await copied.count() === 1;
-      check(named, `${label}: button's accessible name is Copied`);
-      if (named) {
-      const w1 = (await copied.boundingBox()).width;
-      check(Math.abs(w1 - w0) < 0.5, `${label}: button width stays put (${w0} -> ${w1})`);
-      const bh = (await copied.boundingBox()).height;
-      check(bh >= 44, `${label}: Copied button is 44px tall (${Math.round(w1)}x${Math.round(bh)})`);
-      await p.waitForTimeout(2300);
-      check(await scope.getByRole('button', { name: 'Copy link to this run' }).count() === 1, `${label}: label reverts after about 2 s`);
-      }
-    }
+  await p.waitForTimeout(300);
+  check(await toastCount() === 0, `${label}: no page toast behind the modal`);
+  const top1 = await scope.locator('.dd-log-title').evaluate((el) => el.offsetTop);
+  check(top1 === top0, `${label}: no layout shift when the status fills (log heading ${top0} -> ${top1})`);
+  check((await status.textContent()) === want, `${label}: status says "${want}" (${JSON.stringify(await status.textContent())})`);
+  const snap = await scope.ariaSnapshot();
+  check(snap.includes(`status: ${want}`) || snap.includes(want), `${label}: status text is in the dialog's accessibility tree`);
+  const vis = await status.evaluate((el) => { const r = el.getBoundingClientRect(), d = el.closest('dialog'); const hit = document.elementFromPoint(r.left + 4, r.top + r.height / 2); return { w: r.width, h: r.height, inDialog: !!d && d.contains(el), hit: !!hit && (hit === el || el.contains(hit)) }; });
+  check(vis.w > 0 && vis.h >= 16 && vis.inDialog && vis.hit, `${label}: status line is visible in the dialog (${Math.round(vis.w)}x${Math.round(vis.h)})`);
+  await p.addScriptTag({ content: axe });
+  const cc = await p.evaluate(async () => (await axe.run(document.querySelector('dialog[open]'), { runOnly: ['color-contrast'], resultTypes: ['violations'] })).violations.map((v) => v.nodes.length));
+  check(cc.length === 0, `${label}: status and dialog text pass 4.5:1 contrast (axe color-contrast)`);
+  if (fail) {
+    check(await btn.count() === 1, `${label}: button keeps its label when the copy fails`);
   } else {
-    check(toasts > 0, `${label}: page toast still shows (${toasts})`);
-    const toastText = await p.locator('.em-toast-viewport').innerText();
-    check(toastText.includes(fail ? "Couldn't copy the link" : 'Link copied'), `${label}: toast text unchanged (${JSON.stringify(toastText.slice(0, 80))})`);
-    check(await scope.getByRole('button', { name: 'Copy link to this run' }).count() === 1, `${label}: button label unchanged`);
+    const copied = scope.getByRole('button', { name: 'Copied', exact: true });
+    const named = await copied.count() === 1;
+    check(named, `${label}: button's name follows its visible text (Copied)`);
+    if (named) {
+      const box1 = await copied.boundingBox();
+      check(Math.abs(box1.width - box0.width) < 0.5 && Math.abs(box1.height - box0.height) < 0.5 && box1.height >= 44, `${label}: button size stays put (${Math.round(box0.width)}x${Math.round(box0.height)} -> ${Math.round(box1.width)}x${Math.round(box1.height)})`);
+      check(await copied.getAttribute('aria-live') === null, `${label}: no aria-live on the button`);
+    }
+    // A second copy clears and refills the status, so it's announced again.
+    const seen = [];
+    await p.exposeFunction('ddSeen', (t) => seen.push(t));
+    await status.evaluate((el) => new MutationObserver(() => window.ddSeen(el.textContent)).observe(el, { childList: true, characterData: true, subtree: true }));
+    await (named ? copied : btn).click();
+    await p.waitForTimeout(300);
+    check(seen.includes('') && seen[seen.length - 1] === want, `${label}: second copy re-announces (${JSON.stringify(seen)})`);
+    await p.waitForTimeout(2300);
+    check(await btn.count() === 1, `${label}: label reverts after about 2 s`);
+    check((await status.textContent()) === want, `${label}: status text stays (no auto-clear)`);
   }
   await ctx.close();
 }

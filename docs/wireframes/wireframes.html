@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Dev dashboard wireframes (low fidelity)</title>
+<style>
+body{font:14px/1.4 system-ui,sans-serif;margin:24px;color:#222;background:#fff}
+h1{font-size:20px}h2{font-size:15px;margin:0 0 8px}
+.row{display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap}
+.frame{border:2px solid #222;padding:12px;background:#fafafa}
+.desk{width:900px}.mob{width:320px}
+.box{border:1px dashed #666;padding:6px 8px;margin:6px 0;background:#fff}
+.flex{display:flex;gap:6px;flex-wrap:wrap}.flex .box{flex:1}
+.tbl{border-collapse:collapse;width:100%;font-size:12px}.tbl td,.tbl th{border:1px solid #999;padding:3px 5px;text-align:left}
+.drawer{border-left:3px solid #222}.note{font-size:12px;color:#555}
+</style></head><body>
+<h1>Dev dashboard: wireframes v1 (from DASH-SPEC, 2026-11-10)</h1>
+<p class="note">Low fidelity. Boxes are regions, not styling. Status is always icon + text.</p>
+<div class="row">
+<div class="frame desk"><h2>Desktop: list + log drawer</h2>
+ <div class="flex"><div class="box"><b>Deploys</b> (H1)</div><div class="box">Search runs [ / ]</div></div>
+ <div class="box">Tabs: <b>Production</b> | Staging | Preview</div>
+ <div class="box">Alert (role=alert only when new): 2 production deploys failed in the last hour · [View failing deploy]</div>
+ <div class="flex"><div class="box">Status ▾</div><div class="box">Service ▾</div><div class="box">Branch [ ]</div><div class="box">Clear filters</div></div>
+ <div class="flex">
+  <div class="box" style="flex:2"><table class="tbl"><tr><th>Status</th><th>Service</th><th>Commit</th><th>Branch</th><th>Author</th><th>Started ▼</th><th>Duration</th><th>Actions</th></tr>
+   <tr><td>✕ Failed</td><td>checkout-api</td><td>9f3c2a1 Retry…</td><td>main</td><td>A. R.</td><td>12 min ago</td><td>3m 34s</td><td>[Logs]</td></tr>
+   <tr><td>✓ Succeeded</td><td>web-storefront</td><td>c07a9e4 Lazy…</td><td>main</td><td>L. P.</td><td>1 h ago</td><td>4m 48s</td><td>[Logs]</td></tr>
+   <tr><td colspan="8">… scrolls in its own focusable region</td></tr></table></div>
+  <div class="box drawer" style="flex:1"><b>Log drawer</b><br>Run header + status<br>[Jump to first error] [Copy link]<br><code>1 ==> Cloning…<br>…<br>14 ERROR health check failed</code><br>[Close] (Esc, focus back to row)</div>
+ </div>
+ <div class="box">Footer · [Keyboard shortcuts] opens ? modal (shortcut list + Single-key shortcuts switch)</div>
+</div>
+<div class="frame mob"><h2>Mobile (320 px)</h2>
+ <div class="box"><b>Deploys</b></div><div class="box">Search runs</div>
+ <div class="box">Prod | Staging | Preview</div>
+ <div class="box">Alert + View</div>
+ <div class="box">Status ▾</div><div class="box">Service ▾</div><div class="box">Branch</div>
+ <div class="box">Table scrolls sideways inside its region; page never does</div>
+ <div class="box drawer">Log drawer opens as a full-screen modal dialog</div>
+</div>
+</div></body></html>

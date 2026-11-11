@@ -53,5 +53,12 @@ More: [failed filter](docs/screenshots/2026-11-10-prototype-failed-filter.png), 
 |---|---|
 | ![Keyboard shortcuts dialog with the Single-key shortcuts checkbox](docs/screenshots/2026-11-10-prototype-3-shortcuts-desktop.png) | ![The same dialog on a 390 px phone in dark mode](docs/screenshots/2026-11-10-prototype-3-shortcuts-mobile-dark.png) |
 
+### 2026-11-10 - Accessibility report and checks
+- Added [docs/ACR.md](docs/ACR.md), a self-assessed VPAT 2.5 Rev 508 report covering WCAG 2.0, 2.1 and 2.2 A/AA. 302.1 Without Vision is Partially Supports until a screen-reader pass is done.
+- New check: the axe script now also applies the WCAG 1.4.12 text-spacing styles at 640 px (1280 at 200% zoom) and 320 px and looks for overflow and clipped text (22 runs, 0 failing). The e2e now checks the skip link too.
+- Fix: the normal and all-green views now render the mock data on first paint, rather than showing the skeleton for 300 ms. Lighthouse had measured a layout shift of 0.375 from the skeleton swap. The loading and error previews still use `?state=`.
+- Lighthouse 13.6 on the local build, mobile and desktop: accessibility 100 and best practices 100 on the list, an open run log and the error state. Performance is 100 on the list and run log, and 99 to 100 on the error state.
+- Keyboard pass: scripted in `scripts/e2e.mjs` (Chrome, Linux), all checks pass. **Screen reader: not run yet.** No screen reader is installed on the build machine, so no reader pass is claimed.
+
 ## Not done yet
-ACR, keyboard and screen-reader pass, making the repo public, BUILD.json and the jdilig.me case study.
+Screen-reader pass, making the repo public, a release tag, BUILD.json and the sync into jdilig.me, and the case study.

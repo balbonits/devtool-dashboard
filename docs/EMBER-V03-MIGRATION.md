@@ -1,8 +1,9 @@
 # Ember v0.3 migration note
 
 Status: planning note only. Nothing here changes the app. The dashboard stays on Ember UI v0.2.2
-(`github:balbonits/a11y-design-system#v0.2.2`) with two local patches and one allowlisted gap, until a dashboard
-theme exists for v0.3 (decided by Chief of Technology & Engineering, 2026-11-10).
+(`github:balbonits/a11y-design-system#v0.2.2`) with two local patches and one allowlisted gap, until the
+dashboard's kinetic theme is in Ember main and the app pins that commit (see "Update: the dashboard's v0.3 identity
+is kinetic" below; decided by Chief of Technology & Engineering, 2026-11-10).
 
 ## Why we can't just bump
 
@@ -124,7 +125,77 @@ card, rounded inputs, buttons and card (10–12px), 4px offset black shadows on 
 focus ring instead of the 2px teal one, a blue (light) or lime (dark) accent instead of ember orange, different tab styling, and page heights change
 (the main page is 15px taller at every width).
 
-## What Creatives would need to define (a dashboard theme on v0.3)
+## Update: the dashboard's v0.3 identity is kinetic (2026-11-10)
+
+The dashboard already has its v0.3 identity: **kinetic** ("Kinetic Swiss"). The signed kinetic HANDOFF
+(`docs/directions/v3/kinetic/HANDOFF.md` on Ember main, from
+[a11y-design-system #20](https://github.com/balbonits/a11y-design-system/pull/20)) says "job tracker = dusk, dev
+dashboard = kinetic, Ember UI + Storybook = neo", and the app side is already built as draft
+[devtool-dashboard #5](https://github.com/balbonits/devtool-dashboard/pull/5). So **DASH-EMBER-V03 is not blocked on
+a new Creatives theme.** It's blocked on the kinetic theme landing in Ember main. The checklist in the section below
+stays as the reference for what any registered theme must define.
+
+### Does the kinetic HANDOFF cover the checklist?
+
+Checked against HANDOFF H-4/H-7 and the kinetic registration in
+[a11y-design-system #27](https://github.com/balbonits/a11y-design-system/pull/27) (`src/themes/kinetic.css`):
+
+| Item | HANDOFF | #27 `kinetic.css` |
+|---|---|---|
+| Background, surfaces, text, accent, status colors | Yes (H-7, TOKENS.md, CONTRAST.md 60 pairs, 0 fails) | Yes, light and dark |
+| Borders: `--border-width` / `--border-width-strong`; `--rule` decorative, control edges `--border` ≥3:1 | 2px / 3px | Yes |
+| Radii `--radius-sm/-md/-lg/-xl/-full` | 0 / 2 / 0 / 0 / 2px | Yes |
+| Shadows `--shadow-raised` / `--shadow-press` | none / none | Yes |
+| Focus ring width / offset / style / color | 3px solid `--focus-ring-color`, 3px offset | Yes |
+| Tabs | Own tablist, 44px, H-3 keyboard model | `--tabs-track` comes from the component layer (`var(--surface-muted)`) |
+| `--scrim` per mode, composite gates | Yes (3.47:1 / 9.57:1) | Yes |
+| `--control-height/-padding-x/-gap`, `--divider-shape`, `--highlight(-contrast)`, `--tilt`, `--lift` | Named in H-7 | Yes |
+| `--press-offset` (Addendum 8) | **Gap:** H-4 says "press moves 1px" but doesn't name the token | **Gap:** not defined; nor is it anywhere in Ember main yet |
+| Focus ring ≥3:1 against `--tabs-track` | **Not listed** as its own pair; it's `--surface-muted`, which CONTRAST.md covers | n/a |
+
+Gaps for Creatives and FSD: (1) a `--press-offset` value for kinetic (presumably 1px, per H-4) and Addendum 8 landing
+in Ember; (2) a CONTRAST.md row confirming the focus ring against `--tabs-track` in both modes. The undefined-today
+tokens (`--radius-sm`, `--radius-md`, `--shadow-raised`, `--focus-ring-*`) are all covered.
+
+### Ember PRs kinetic depends on (heads as of 2026-11-10 11:50 PM PT)
+
+- [#27](https://github.com/balbonits/a11y-design-system/pull/27) "Ember v0.3.1: Addendum 7, kinetic theme, Switch,
+  R-2a component lint", open, head `d963cbd9329e65d7b083f9dfe88248d89d829e70`. It registers kinetic. It doesn't
+  contain HIT-PATCH (#36) yet (21 main commits behind) and **conflicts with main** in `src/ember.css` and
+  `PROGRESS.md`, so FSD needs to merge main into it first.
+- Addendum 8 (`--press-offset`): no Ember PR found yet.
+- Not blockers for the dashboard: [#31](https://github.com/balbonits/a11y-design-system/pull/31) R-3 motion (draft,
+  `8da09de742b89be4d73b8caf8f322bd19b30cf5c`, #5 has its own ticker);
+  [#21](https://github.com/balbonits/a11y-design-system/pull/21) toast focus-not-obscured
+  (`c11d14637390dd6b42d2cc4a89aa8c5774ae927c`) and
+  [#37](https://github.com/balbonits/a11y-design-system/pull/37) toast toggle name
+  (`a3f61e194806b593f3bedbafb40cb355137e3c52`) are worth having, because #5 still uses Ember's toast.
+
+There won't be a v0.3.1 tag. The dashboard pins a full Ember main commit SHA that includes kinetic, which needs no
+publish.
+
+### Notes for #5 when it rebuilds on that pin
+
+- #5 uses its own environment tabs and runs table, so the `.em-tab` KNOWN_GAPS entry stops applying once #5 lands.
+  Remove it then rather than leave it unused.
+- #5 still uses Ember's toast (`useToast`), so the `.em-btn--sm::before` override stays until the pin includes
+  HIT-PATCH.
+- #5 renders a `ToastProvider` inside its run dialog. That's a different answer to the toast-behind-the-modal
+  problem than #9's in-dialog status. Pick one when #5 merges main; CA ruled the in-dialog status for #9.
+- #5 branches from `dcda1dc` and will conflict with #8, #9 and #10 in the ACR, `scripts/e2e.mjs`, the guard and
+  `RunDrawer`. Merge main in, don't rebase.
+
+### Proposed order
+
+1. FSD merges main into Ember #27 (picks up #36), adds `--press-offset` for kinetic (Addendum 8) and the
+   focus-vs-tabs-track contrast row; CA and QA gate it; CTE merges it.
+2. #5: merge devtool-dashboard main in, pin `ember-ui` to that Ember main merge SHA (full 40 characters), delete
+   `src/styles/kinetic-shim.css` and use the registered kinetic tokens, then out of draft to CA and QA.
+3. DASH-EMBER-V03 (can fold into step 2): remove KNOWN_GAPS `.em-tab` and the `.em-btn--sm::before` override; confirm
+   tabs and toast Dismiss ≥44 effective at 320/375/1280, light and dark; set the ACR 2.5.8 final wording.
+4. Re-gate: lint, typecheck, vitest, build, e2e, a11y (axe 0), target-audit, then QA, then CA.
+
+## What any registered v0.3 theme must define (reference)
 
 A theme registered the v0.3 way (a `[data-theme="…"]` block with light and dark modes, set on `<html>`). Per PROC-2 it
 is the dashboard's own identity, distinct from the job tracker's (which is also on v0.2.2 today). Today's values below
@@ -169,13 +240,12 @@ Every value goes through Chief Architect for token naming and Creatives for iden
 
 ## Cards afterwards
 
-1. **DASH-THEME** (Creatives, then CA): the theme spec above as a dev-ready handoff, mobile-first, with annotated
-   shots.
-2. **DASH-EMBER-V03** (Front End; on the board, blocked on DASH-THEME): bump `ember-ui` to a tag that contains #36
-   (a v0.3.x tag is John's call; until then pin `346ad36`), register and apply the dashboard theme, and add any font
+1. **Kinetic in Ember main** (FSD, Ember #27; see Proposed order above). The kinetic HANDOFF is the theme spec.
+2. **DASH-EMBER-V03** (Front End; on the board, blocked on kinetic in Ember main): pin `ember-ui` to the full Ember main SHA that
+   includes kinetic and #36 (no tag, no publish), apply kinetic via #5, and add any font
    packages John approves. In the same card, remove the `KNOWN_GAPS` `.em-tab` entry in `scripts/targets.mjs` and the
    `.ember .em-btn--sm::before` override in `src/app.css`; confirm the tabs and the toast Dismiss are ≥44 effective at
    320/375/1280, light and dark; set ACR 2.5.8 to "All targets meet WCAG 2.5.8 (24px), and every standalone control
-   meets the project's 44px goal." Done means the build matches the approved DASH-THEME spec, with a
+   meets the project's 44px goal." Done means the build matches the signed kinetic HANDOFF, with a
    before/after pixel diff in the PR.
 3. **Re-gate:** lint, typecheck, vitest, build, e2e, a11y (axe 0), target-audit, then QA, then CA.

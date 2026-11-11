@@ -1,4 +1,4 @@
-// Browser checks for R-5 (run links: title, focus, scroll), the log drawer and R-7 (single-key shortcuts and their off switch), on desktop (side panel) and mobile (modal).
+// Browser checks for R-5 (run links: title, focus, scroll), the log drawer and R-7 (single-key shortcuts and their off switch), in the right drawer (1024 and up) and the centred modal (below 1024).
 // Usage: node scripts/e2e.mjs [baseUrl]   (default http://127.0.0.1:4174/ux/dev-dashboard/)
 import { chromium } from 'playwright-core';
 import { readFileSync } from 'node:fs';
@@ -12,7 +12,7 @@ let failed = 0;
 const check = (ok, what) => { console.log(`${ok ? 'ok  ' : 'FAIL'} ${what}`); if (!ok) failed++; };
 const active = (p) => p.evaluate(() => { const a = document.activeElement; return a ? `${a.tagName.toLowerCase()}#${a.id}|${(a.textContent || '').trim().slice(0, 40)}|${a.getAttribute('aria-label') || ''}` : ''; });
 
-for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
+for (const [label, width] of [['desktop', 1280], ['tablet', 1024], ['mobile', 375]]) {
   const p = await (await browser.newContext({ viewport: { width, height: 800 }, reducedMotion: 'reduce' })).newPage();
   await p.goto(base, { waitUntil: 'networkidle' });
   await p.waitForSelector('#logs-run-01');
@@ -26,16 +26,18 @@ for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
 
   // Open from the row with the keyboard.
   await p.evaluate(() => window.scrollTo(0, 200));
-  const before = await p.evaluate(() => window.scrollY);
   await p.focus('#logs-run-01');
+  // Measured after focus, which may scroll the row into view; opening and closing the log must not move it.
+  const before = await p.evaluate(() => window.scrollY);
   await p.keyboard.press('Enter');
   await p.waitForFunction(() => location.hash === '#/run/run-01');
   const title = await p.title();
-  check(/^checkout-api \w+ · Run log · Deploys$/.test(title), `${label}: run title "${title}"`);
+  check(/^checkout-api run \w+ · Run log · Deploys$/.test(title), `${label}: run title "${title}"`);
   const f = await active(p);
-  check(label === 'desktop' ? f.startsWith('h2#dd-drawer-title') : f.includes('Close dialog'), `${label}: focus moved into the drawer (${f})`);
+  check(f.startsWith('h2#dd-run-title'), `${label}: focus moved to the run heading (${f})`);
 
-  // Jump to first error.
+  // Jump to first error, once the log has loaded.
+  await p.waitForSelector('.dd-run-dialog ol');
   await p.getByRole('button', { name: 'Jump to first error' }).click();
   check((await active(p)).includes('ERROR'), `${label}: Jump to first error focuses the error line`);
 
@@ -64,11 +66,11 @@ for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
   check((await active(p)).startsWith('button#logs-run-02'), `${label}: Close after deep link focuses the row`);
 
   // Alert banner action.
-  await p.goto(base + '?env=staging', { waitUntil: 'networkidle' });
+  await p.goto(base, { waitUntil: 'networkidle' });
   await p.getByRole('button', { name: 'View failing deploy' }).click();
   await p.waitForFunction(() => location.hash === '#/run/run-01');
   const q = await p.evaluate(() => location.search);
-  check(q.includes('status=failed') && q.includes('service=checkout-api') && !q.includes('env='), `${label}: View failing deploy filters to it (${q})`);
+  check(q.includes('status=failed') && q.includes('service=checkout-api'), `${label}: View failing deploy filters to it (${q})`);
   check(await p.getByRole('tab', { name: 'Production' }).getAttribute('aria-selected') === 'true', `${label}: Production tab selected`);
 
   // R-7: typing j in search types a j and moves nothing.
@@ -86,7 +88,7 @@ for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
   check(true, `${label}: Enter on a row opens its log`);
   await p.keyboard.press('Escape');
   await p.waitForFunction(() => !location.hash.includes('run'));
-  // On mobile the log is a native dialog; wait until it has really closed, or the ? key is (correctly) ignored.
+  // The log is a native dialog; wait until it has really closed, or the ? key is (correctly) ignored.
   await p.waitForFunction(() => !document.querySelector('dialog[open]'));
   // The ? dialog: axe-clean, then switch shortcuts off.
   await p.keyboard.press('?');
@@ -95,7 +97,7 @@ for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
   const v = await p.evaluate(async () => (await axe.run(document, { resultTypes: ['violations'] })).violations.filter((x) => ['serious', 'critical'].includes(x.impact)).map((x) => x.id));
   check(v.length === 0, `${label}: shortcuts dialog axe serious/critical: ${v.join(',') || 'none'}`);
   await p.getByRole('checkbox', { name: /Single-key shortcuts/ }).click();
-  await p.getByRole('button', { name: 'Done' }).click();
+  await p.getByRole('button', { name: 'Close', exact: true }).click();
   await p.reload({ waitUntil: 'networkidle' });
   await p.locator('h1').focus();
   const url = p.url();

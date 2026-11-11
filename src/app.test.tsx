@@ -26,14 +26,17 @@ describe('dashboard', () => {
     expect(window.location.search).toBe('');
   });
 
-  it('updates the visible count at once but speaks it once typing settles', async () => {
+  it('speaks the count at once after a filter change, and once typing in search settles (H-4)', async () => {
     const user = userEvent.setup();
     render(<App demo={null} runs={makeRuns()} />);
     const spoken = screen.getAllByRole('status').find((el) => !el.classList.contains('em-toast-region'))!;
     expect(spoken).toHaveTextContent('9 of 9 runs shown');
     await user.selectOptions(screen.getByLabelText('Status'), 'failed');
+    expect(spoken).toHaveTextContent('2 of 9 runs shown');
+    await user.selectOptions(screen.getByLabelText('Status'), '');
+    await user.type(screen.getByLabelText('Search runs'), 'checkout');
     expect(screen.getByText('2 of 9 runs shown', { selector: '.dd-count' })).toBeInTheDocument();
-    expect(spoken).toHaveTextContent('9 of 9 runs shown');
+    expect(spoken).not.toHaveTextContent('2 of 9 runs shown');
     await waitFor(() => expect(spoken).toHaveTextContent('2 of 9 runs shown'));
   });
 

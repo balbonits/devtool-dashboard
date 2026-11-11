@@ -1,0 +1,154 @@
+/* TEMPORARY kinetic token shim (KINETIC-PREP, CTE 2026-11-10). Delete when Ember v0.3.1 ships the kinetic theme (R-2).
+   Source: balbonits/a11y-design-system @938e642 docs/directions/v3/kinetic/tokens.css (CA SIGNED, VQA PASSED).
+   Addendum 5 and 7 names only, no aliases. Literal colors are allowed here only in custom-property declarations (token-lint). */
+:root {
+  --palette-scrim: #06123F99;
+  --palette-warm-50: #FBF8F1;
+  --palette-warm-100: #F3EEE2;
+  --palette-warm-200: #E8E1D0;
+  --palette-white: #FFFFFF;
+  --palette-cobalt-950: #06123F;
+  --palette-cobalt-900: #0A1B5C;
+  --palette-cobalt-800: #0E2580;
+  --palette-cobalt-700: #1434B8;
+  --palette-cobalt-600: #1D44D6;
+  --palette-cobalt-500: #3A5EE8;
+  --palette-cobalt-300: #9AB0FF;
+  --palette-cobalt-200: #C2CFFF;
+  --palette-cobalt-100: #E4E9FB;
+  --palette-slate-600: #45507A;
+  --palette-slate-300: #C3C9E0;
+  --palette-slate-400: #8C96BE;
+  --palette-night-900: #070F33;
+  --palette-night-800: #0D1844;
+  --palette-night-700: #152255;
+  --palette-red-700: #C21807;
+  --palette-red-800: #9C1305;
+  --palette-red-100: #FCE3DD;
+  --palette-red-400: #FF6B57;
+  --palette-red-300: #FF8B7A;
+  --palette-red-950: #3B0E12;
+  --palette-green-700: #0B6B37;
+  --palette-green-300: #6FE0A0;
+  --palette-amber-800: #8A4B00;
+  --palette-amber-300: #FFC861;
+  --palette-crimson-700: #A3122A;
+  --palette-crimson-800: #820E21;
+  --palette-crimson-300: #FF93A6;
+  --palette-crimson-200: #FFB3C0;
+}
+[data-theme="kinetic"] {
+  --font-display: 'Bricolage Grotesque', 'Arial Narrow', system-ui, sans-serif;
+  --font-body: 'Instrument Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --weight-display: 700;
+  --weight-display-min: 300;
+  --weight-display-max: 800;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-md: 2px;
+  --radius-sm: 0px;
+  --radius-full: 2px;
+  --border-width: 2px;
+  --border-width-strong: 3px;
+  --divider-shape: none;
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 3px;
+  --focus-ring-style: solid;
+  --control-height: 48px;
+  --control-padding-x: 1.3rem;
+  --control-gap: .6rem;
+  --target-min: 44px;
+  --tilt: 0deg;
+  --rule: 1px;
+  --shadow-raised: none;
+  --shadow-overlay: none;
+  --shadow-press: none;
+  --blur-glass: 0px;
+  --duration-fast: 140ms;
+  --duration-base: 260ms;
+  --duration-slow: 480ms;
+  --duration-reveal: 700ms;
+  --stagger: 90ms;
+  --ease-standard: cubic-bezier(.16,1,.3,1);
+  --ease-press: cubic-bezier(.2,0,0,1);
+  --duration-ticker: 36s;
+  --parallax-scale: 0;
+  --lift: 0px;
+  --weight-shift: 1;
+}
+[data-theme="kinetic"], [data-theme="kinetic"][data-mode="light"] {
+  --scrim: var(--palette-scrim);
+  --color-bg: var(--palette-warm-50);
+  --surface: var(--palette-white);
+  --surface-muted: var(--palette-warm-100);
+  --text: var(--palette-cobalt-900);
+  --text-muted: var(--palette-slate-600);
+  --border: var(--palette-cobalt-700);
+  --border-subtle: var(--palette-slate-300);
+  --accent: var(--palette-red-700);
+  --accent-hover: var(--palette-red-800);
+  --accent-soft: var(--palette-red-100);
+  --accent-contrast: var(--palette-white);
+  --focus-ring-color: var(--palette-cobalt-700);
+  --success: var(--palette-green-700);
+  --warning: var(--palette-amber-800);
+  --danger: var(--palette-crimson-700);
+  --danger-hover: var(--palette-crimson-800);
+  --danger-contrast: var(--palette-white);
+  --info: var(--palette-cobalt-700);
+  --highlight: var(--palette-cobalt-700);
+  --highlight-contrast: var(--palette-warm-50);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { [data-theme="kinetic"]:not([data-mode]) {
+  --scrim: var(--palette-scrim);
+  --color-bg: var(--palette-night-900);
+  --surface: var(--palette-night-800);
+  --surface-muted: var(--palette-night-700);
+  --text: var(--palette-warm-50);
+  --text-muted: var(--palette-slate-300);
+  --border: var(--palette-cobalt-300);
+  --border-subtle: var(--palette-slate-600);
+  --accent: var(--palette-red-400);
+  --accent-hover: var(--palette-red-300);
+  --accent-soft: var(--palette-red-950);
+  --accent-contrast: var(--palette-night-900);
+  --focus-ring-color: var(--palette-cobalt-200);
+  --success: var(--palette-green-300);
+  --warning: var(--palette-amber-300);
+  --danger: var(--palette-crimson-300);
+  --danger-hover: var(--palette-crimson-200);
+  --danger-contrast: var(--palette-night-900);
+  --info: var(--palette-cobalt-300);
+  --highlight: var(--palette-cobalt-600);
+  --highlight-contrast: var(--palette-warm-50);
+  color-scheme: dark;
+} }
+[data-theme="kinetic"][data-mode="dark"] {
+  --scrim: var(--palette-scrim);
+  --color-bg: var(--palette-night-900);
+  --surface: var(--palette-night-800);
+  --surface-muted: var(--palette-night-700);
+  --text: var(--palette-warm-50);
+  --text-muted: var(--palette-slate-300);
+  --border: var(--palette-cobalt-300);
+  --border-subtle: var(--palette-slate-600);
+  --accent: var(--palette-red-400);
+  --accent-hover: var(--palette-red-300);
+  --accent-soft: var(--palette-red-950);
+  --accent-contrast: var(--palette-night-900);
+  --focus-ring-color: var(--palette-cobalt-200);
+  --success: var(--palette-green-300);
+  --warning: var(--palette-amber-300);
+  --danger: var(--palette-crimson-300);
+  --danger-hover: var(--palette-crimson-200);
+  --danger-contrast: var(--palette-night-900);
+  --info: var(--palette-cobalt-300);
+  --highlight: var(--palette-cobalt-600);
+  --highlight-contrast: var(--palette-warm-50);
+  color-scheme: dark;
+}
+@media (prefers-reduced-motion: reduce) { [data-theme="kinetic"] {
+  --tilt: 0deg; --lift: 0px; --duration-fast: 0ms; --duration-base: 0ms; --duration-slow: 0ms; --duration-reveal: 0ms; --stagger: 0ms; --weight-shift: 0;
+} }

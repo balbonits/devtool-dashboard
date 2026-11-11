@@ -1,7 +1,7 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
-import { recentProdFailures } from './AlertBanner';
+import { recentFailures } from './AlertBanner';
 import { allGreen, makeRuns } from './lib/data';
 import { parseHash } from './lib/route';
 
@@ -18,43 +18,35 @@ describe('routes', () => {
   });
 });
 
-describe('alert banner', () => {
-  it('counts production failures from the last hour, newest first', () => {
+describe('failures banner', () => {
+  it('counts one environment\'s failures from the last hour, newest first', () => {
     const runs = makeRuns();
-    const f = recentProdFailures(runs);
-    expect(f.map((r) => r.service)).toEqual(['checkout-api', 'search-indexer']);
-    expect(recentProdFailures(allGreen(runs))).toEqual([]);
+    expect(recentFailures(runs, 'production').map((r) => r.service)).toEqual(['checkout-api', 'search-indexer']);
+    expect(recentFailures(runs, 'staging')).toEqual([]);
+    expect(recentFailures(allGreen(runs), 'production')).toEqual([]);
   });
 
-  it('announces a new set of failures once per session, into an alert that mounted empty', async () => {
-    const { unmount } = render(<App demo={null} runs={makeRuns()} />);
-    const live = document.getElementById('dd-alert-text')!;
-    expect(live).toHaveAttribute('role', 'alert');
-    // Nothing readable at mount: the text is visibility:hidden (.dd-pending) until it is filled in.
-    expect(live.firstElementChild).toHaveClass('dd-pending');
-    await waitFor(() => expect(live.firstElementChild).not.toHaveClass('dd-pending'));
-    expect(live).toHaveTextContent(/2 production deploys failed in the last hour/);
-    unmount();
+  it('is a static section with the heading "Failed deploys" and no live role on load (CA ruling 3)', () => {
     render(<App demo={null} runs={makeRuns()} />);
-    expect(screen.getByText(/2 production deploys failed/)).toBeInTheDocument();
-    expect(document.getElementById('dd-alert-text')).not.toHaveAttribute('role');
+    const banner = screen.getByRole('region', { name: 'Failed deploys' });
+    expect(within(banner).getByText('2 Production deploys failed in the last hour.')).not.toHaveAttribute('role');
+    expect(banner.querySelector('[role="alert"], [role="status"], [aria-live]')).toBeNull();
   });
 
-  it('is absent when all green', () => {
+  it('is absent when all green, which shows the calm line instead', () => {
     render(<App demo="green" runs={allGreen(makeRuns())} />);
     expect(screen.queryByText(/failed in the last hour/)).not.toBeInTheDocument();
+    expect(screen.getByText('All deploys healthy in Production.')).toBeInTheDocument();
   });
 
-  it('View failing deploy filters to it and opens its log', async () => {
+  it('View failing deploy sets Status and Service, then opens the newest failing run', async () => {
     const user = userEvent.setup();
-    window.history.replaceState(null, '', '/?env=staging');
     render(<App demo={null} runs={makeRuns()} />);
     await user.click(screen.getByRole('button', { name: 'View failing deploy' }));
-    expect(screen.getByRole('tab', { name: 'Production' })).toHaveAttribute('aria-selected', 'true');
     expect(window.location.search).toContain('status=failed');
     expect(window.location.search).toContain('service=checkout-api');
     expect(window.location.hash).toMatch(/^#\/run\/run-\d+$/);
-    expect(await screen.findByRole('heading', { level: 2, name: /^checkout-api / })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 2, name: /^checkout-api run / })).toHaveFocus();
   });
 });
 
@@ -64,9 +56,13 @@ describe('log drawer', () => {
     render(<App demo={null} runs={makeRuns()} />);
     const btn = screen.getAllByRole('button', { name: /^Open log for checkout-api / })[0];
     await user.click(btn);
-    const heading = await screen.findByRole('heading', { level: 2, name: /^checkout-api / });
+    const heading = await screen.findByRole('heading', { level: 2, name: /^checkout-api run / });
+    expect(heading).toHaveFocus();
     expect(document.title).toBe(`${heading.textContent} · Run log · Deploys`);
-    await user.click(screen.getByRole('button', { name: 'Jump to first error' }));
+    expect(within(heading.closest('dialog')!).getByText('Loading log')).toHaveAttribute('role', 'status');
+    const jump = screen.getByRole('button', { name: 'Jump to first error' });
+    await waitFor(() => expect(jump).toBeEnabled());
+    await user.click(jump);
     expect(document.activeElement?.textContent).toMatch(/ERROR/);
     await user.click(screen.getByRole('button', { name: 'Close' }));
     await waitFor(() => expect(window.location.hash).not.toMatch(/run/));
@@ -90,5 +86,25 @@ describe('log drawer', () => {
     await act(async () => { await user.click(screen.getByRole('button', { name: 'Copy link to this run' })); });
     expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/#\/run\/run-\d+$/));
     expect(await screen.findByText('Link copied')).toBeInTheDocument();
+  });
+
+  it('disables Jump to first error with a visible reason when the log has no errors', async () => {
+    const user = userEvent.setup();
+    render(<App demo={null} runs={makeRuns()} />);
+    await user.click(screen.getByRole('button', { name: /^Open log for web-storefront c07a9e4/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Jump to first error' })).toHaveAccessibleDescription('No errors in this log.'));
+    expect(screen.getByRole('button', { name: 'Jump to first error' })).toBeDisabled();
+  });
+
+  it('shows the log error with Retry inside the dialog, then loads on Retry', async () => {
+    const user = userEvent.setup();
+    render(<App demo="log-error" runs={makeRuns()} />);
+    await user.click(screen.getAllByRole('button', { name: /^Open log for / })[0]);
+    const dialog = (await screen.findByRole('heading', { level: 2, name: /run/ })).closest('dialog')!;
+    expect(await within(dialog).findByText("Couldn't load this log.", {}, { timeout: 2000 })).toHaveAttribute('role', 'alert');
+    await user.click(within(dialog).getByRole('button', { name: 'Retry' }));
+    const log = within(dialog).getByRole('region', { name: 'Log output' });
+    await waitFor(() => expect(log.querySelector('ol')).not.toBeNull());
+    expect(log).not.toHaveAttribute('aria-busy');
   });
 });

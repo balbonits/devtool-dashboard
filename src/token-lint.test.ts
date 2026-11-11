@@ -15,4 +15,11 @@ describe('token-lint', () => {
   it('catches a retired name in a .tsx file too', () => {
     expect(lintSource('a.tsx', `const s = { borderRadius: 'var(${RETIRED[0]})' };`)).toHaveLength(1);
   });
+  it('lets only the kinetic shim define literal colors, and only as token values', () => {
+    const shim = 'src/styles/kinetic-shim.css';
+    expect(lintSource(shim, ':root {\n  --palette-white: #FFFFFF;\n}')).toEqual([]);
+    expect(lintSource(shim, '.x { color: #fff; }')).toHaveLength(1);
+    expect(lintSource('src/app.css', ':root {\n  --palette-white: #FFFFFF;\n}')).toHaveLength(1);
+    expect(lintSource(shim, ':root {\n  --radius: 0px;\n}').join()).toMatch('retired token --radius');
+  });
 });

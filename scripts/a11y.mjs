@@ -49,6 +49,33 @@ for (const width of [1280, 900, 414, 375, 320]) for (const scheme of ['light', '
   }
   await ctx.close();
 }
+// WCAG 1.4.4 + 1.4.12: at 640 px (1280 at 200% zoom) and 320 px with the text-spacing bookmarklet styles applied,
+// nothing scrolls the page sideways and no text is clipped by an overflow:hidden box.
+const spacing = '* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; } p { margin-bottom: 2em !important; }';
+let spacingFail = 0;
+for (const width of [640, 320]) {
+  const ctx = await browser.newContext({ viewport: { width, height: 800 }, reducedMotion: 'reduce' });
+  for (const [name, path] of pages) {
+    const p = await ctx.newPage();
+    await p.goto(base + path, { waitUntil: 'networkidle' });
+    await p.addStyleTag({ content: spacing });
+    await p.waitForTimeout(200);
+    const r = await p.evaluate(() => ({
+      over: document.documentElement.scrollWidth - window.innerWidth,
+      clipped: [...document.querySelectorAll('body *')].filter((el) => {
+        const cs = getComputedStyle(el);
+        if (el.closest('.sr-only, [hidden], dialog:not([open])') || !el.getClientRects().length) return false;
+        const hides = (v) => v === 'hidden' || v === 'clip';
+        return (hides(cs.overflowX) && el.scrollWidth > el.clientWidth + 1) || (hides(cs.overflowY) && el.scrollHeight > el.clientHeight + 1);
+      }).map((el) => `${el.tagName.toLowerCase()}.${el.className}`.slice(0, 50)),
+    }));
+    runs++;
+    if (r.over > 0 || r.clipped.length) { spacingFail++; failing++; console.log('FAIL text-spacing', width, name, 'overflow', r.over, 'clipped', r.clipped.join(' ')); }
+    await p.close();
+  }
+  await ctx.close();
+}
+console.log(`text spacing at 640/320: ${pages.length * 2} runs, ${spacingFail} failing`);
 await browser.close();
-console.log(`axe: ${runs} runs (${pages.length} states x 1280/900/414/375/320 x light/dark), ${failing} failing. Minor/moderate: ${minor}`);
+console.log(`axe: ${pages.length * 10} runs (${pages.length} states x 1280/900/414/375/320 x light/dark); ${runs} checks in all, ${failing} failing. Minor/moderate: ${minor}`);
 process.exit(failing ? 1 : 0);

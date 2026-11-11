@@ -15,6 +15,9 @@ All services, people, commits and logs are **fictional mock data**. There is no 
 
 - Keyboard shortcuts (`/` search, `f` filters, `j`/`k` rows, `?` help) that can be switched off in the shortcuts dialog (WCAG 2.1.4) and never fire while typing. See [PROGRESS.md](PROGRESS.md).
 
+## Accessibility
+Target: WCAG 2.2 AA (Section 508 via WCAG 2.0 AA). Self-assessed report: [docs/ACR.md](docs/ACR.md). It hasn't been checked with a screen reader yet.
+
 ## Theming
 Every style reads Ember UI semantic tokens (color, spacing, radius, border, type). The dashboard's own theme comes later from the design team and registers on Ember UI; `npm run lint:tokens` fails on `@keyframes`, literal colors, or hardcoded radius, border-width, box-shadow or outline values.
 

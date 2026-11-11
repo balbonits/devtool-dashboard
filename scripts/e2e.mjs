@@ -17,6 +17,13 @@ for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
   await p.goto(base, { waitUntil: 'networkidle' });
   await p.waitForSelector('#logs-run-01');
 
+  // Skip link: first Tab stop, 44 px tall once visible, moves focus to main.
+  await p.keyboard.press('Tab');
+  const skip = await p.evaluate(() => { const a = document.activeElement; const b = a.getBoundingClientRect(); return { cls: a.className, h: b.height, w: b.width }; });
+  check(skip.cls.includes('dd-skip') && skip.h >= 44 && skip.w >= 44, `${label}: first Tab is the skip link (${Math.round(skip.w)}x${Math.round(skip.h)})`);
+  await p.keyboard.press('Enter');
+  check((await active(p)).startsWith('main#main'), `${label}: skip link moves focus to main`);
+
   // Open from the row with the keyboard.
   await p.evaluate(() => window.scrollTo(0, 200));
   const before = await p.evaluate(() => window.scrollY);
@@ -79,6 +86,8 @@ for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
   check(true, `${label}: Enter on a row opens its log`);
   await p.keyboard.press('Escape');
   await p.waitForFunction(() => !location.hash.includes('run'));
+  // On mobile the log is a native dialog; wait until it has really closed, or the ? key is (correctly) ignored.
+  await p.waitForFunction(() => !document.querySelector('dialog[open]'));
   // The ? dialog: axe-clean, then switch shortcuts off.
   await p.keyboard.press('?');
   await p.waitForSelector('dialog[open]');

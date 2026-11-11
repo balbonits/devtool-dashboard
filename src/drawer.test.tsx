@@ -26,12 +26,18 @@ describe('alert banner', () => {
     expect(recentProdFailures(allGreen(runs))).toEqual([]);
   });
 
-  it('announces a new set of failures once per session', () => {
+  it('announces a new set of failures once per session, into an alert that mounted empty', async () => {
     const { unmount } = render(<App demo={null} runs={makeRuns()} />);
-    expect(screen.getByText(/2 production deploys failed in the last hour/)).toHaveAttribute('role', 'alert');
+    const live = document.getElementById('dd-alert-text')!;
+    expect(live).toHaveAttribute('role', 'alert');
+    // Nothing readable at mount: the text is visibility:hidden (.dd-pending) until it is filled in.
+    expect(live.firstElementChild).toHaveClass('dd-pending');
+    await waitFor(() => expect(live.firstElementChild).not.toHaveClass('dd-pending'));
+    expect(live).toHaveTextContent(/2 production deploys failed in the last hour/);
     unmount();
     render(<App demo={null} runs={makeRuns()} />);
-    expect(screen.getByText(/2 production deploys failed/)).not.toHaveAttribute('role');
+    expect(screen.getByText(/2 production deploys failed/)).toBeInTheDocument();
+    expect(document.getElementById('dd-alert-text')).not.toHaveAttribute('role');
   });
 
   it('is absent when all green', () => {

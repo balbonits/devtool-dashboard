@@ -53,7 +53,15 @@ More: [failed filter](docs/screenshots/2026-11-10-prototype-failed-filter.png), 
 |---|---|
 | ![Keyboard shortcuts dialog with the Single-key shortcuts checkbox](docs/screenshots/2026-11-10-prototype-3-shortcuts-desktop.png) | ![The same dialog on a 390 px phone in dark mode](docs/screenshots/2026-11-10-prototype-3-shortcuts-mobile-dark.png) |
 
+### 2026-11-10 - Accessibility report and checks
+- Added [docs/ACR.md](docs/ACR.md), a self-assessed VPAT 2.5 Rev 508 report covering WCAG 2.0, 2.1 and 2.2 A/AA. 302.1 Without Vision is Partially Supports until a screen-reader pass is done.
+- New check: the axe script now also applies the WCAG 1.4.12 text-spacing styles at 640 px (1280 at 200% zoom) and 320 px and looks for overflow and clipped text (22 runs, 0 failing). The e2e now checks the skip link too.
+- Fix: the normal and all-green views now render the mock data on first paint, rather than showing the skeleton for 300 ms. Lighthouse had measured a layout shift of 0.375 from the skeleton swap. The loading and error previews still use `?state=`.
+- Lighthouse 13.6 on the local build, mobile and desktop: accessibility 100 and best practices 100 on the list, an open run log and the error state. Performance is 100 on the list and run log, and 99 to 100 on the error state.
+- Keyboard pass: scripted in `scripts/e2e.mjs` (Chrome, Linux), all checks pass. **Screen reader: not run yet.** No screen reader is installed on the build machine, so no reader pass is claimed.
+
 ## Not done yet
+Screen-reader pass, making the repo public, a release tag, BUILD.json and the sync into jdilig.me, and the case study.
 ACR, keyboard and screen-reader pass, making the repo public, BUILD.json and the jdilig.me case study.
 Keyboard shortcuts and their off switch (R-7), ACR, keyboard and screen-reader pass, making the repo public, BUILD.json and the jdilig.me case study.
 Log drawer, alert banner, run links with title/focus/scroll handling (R-5), keyboard shortcuts and their off switch (R-7), ACR, keyboard and screen-reader pass, secret scan, BUILD.json and the jdilig.me case study.
@@ -63,3 +71,16 @@ Log drawer, alert banner, run links with title/focus/scroll handling (R-5), keyb
 - Loading now matches DASH-SPEC line 31: the table is in place with `aria-busy="true"`, its skeleton rows are `aria-hidden`, one polite status says "Loading runs", and nothing animates. The real table replaces it when data lands.
 - token-lint also fails on retired token names (exact match, so `--focus-ring-color` still passes), with tests that plant each one.
 - Checks: 26 unit tests (12 of them token-lint), token-lint clean, axe 80 runs with 0 failing.
+
+## 2026-11-10 ~8:00 PM PT: Chief Architect follow-ups before the ACR
+- The failure banner's alert region mounts with its text hidden and fills it in about 50 ms later, so screen readers notice the new text. The text keeps its space while hidden, so nothing shifts (Lighthouse layout shift stays 0.018).
+- The "n of m runs shown" count changes on screen at once, but the status that screen readers hear waits until filtering has settled for about 500 ms.
+- With single-key shortcuts off, no control advertises them in `aria-keyshortcuts` any more.
+- e2e waits for the mobile log dialog to finish closing before pressing `?`; that race had made one run in three fail.
+- Checks: 41 unit and component tests; token-lint clean; axe 110 runs and the text-spacing pass, 0 failing; e2e passed 3 runs in a row; Lighthouse on the list: accessibility, best practices and performance 100, layout shift 0.018.
+
+## 2026-11-10 6:30 PM PT: sign-offs and follow-ups
+- Chief Architect signed the ACR. At CA's request, 4.1.3 now says Partially Supports until a screen-reader pass, matching 302.1.
+- QA nit fixed: shortcuts now ignore every editable element, `contenteditable="plaintext-only"` included (new unit test).
+- Tracked follow-up (EMBER-030): the PR that adopts Ember v0.3.0 removes the `var(--border-width, 1px)` and `var(--target-min, 44px)` fallbacks and checks the now-rounded corners.
+- At release, the ACR Version line names the deployed commit SHA.

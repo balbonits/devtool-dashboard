@@ -62,3 +62,19 @@ More: [failed filter](docs/screenshots/2026-11-10-prototype-failed-filter.png), 
 
 ## Not done yet
 Screen-reader pass, making the repo public, a release tag, BUILD.json and the sync into jdilig.me, and the case study.
+ACR, keyboard and screen-reader pass, making the repo public, BUILD.json and the jdilig.me case study.
+Keyboard shortcuts and their off switch (R-7), ACR, keyboard and screen-reader pass, making the repo public, BUILD.json and the jdilig.me case study.
+Log drawer, alert banner, run links with title/focus/scroll handling (R-5), keyboard shortcuts and their off switch (R-7), ACR, keyboard and screen-reader pass, secret scan, BUILD.json and the jdilig.me case study.
+
+## 2026-11-10 ~7:00 PM PT: review fixes (QA FAIL on 6a2cc73)
+- Shape tokens now use only the locked R-2 names: `--radius-sm` (skip link) and `--radius-md` (calm note, banner). Ember v0.2.2 doesn't ship those yet, so corners stay square until v0.3.0. `--border-width` and `--target-min` keep a fallback until then.
+- Loading now matches DASH-SPEC line 31: the table is in place with `aria-busy="true"`, its skeleton rows are `aria-hidden`, one polite status says "Loading runs", and nothing animates. The real table replaces it when data lands.
+- token-lint also fails on retired token names (exact match, so `--focus-ring-color` still passes), with tests that plant each one.
+- Checks: 26 unit tests (12 of them token-lint), token-lint clean, axe 80 runs with 0 failing.
+
+## 2026-11-10 ~8:00 PM PT: Chief Architect follow-ups before the ACR
+- The failure banner's alert region mounts with its text hidden and fills it in about 50 ms later, so screen readers notice the new text. The text keeps its space while hidden, so nothing shifts (Lighthouse layout shift stays 0.018).
+- The "n of m runs shown" count changes on screen at once, but the status that screen readers hear waits until filtering has settled for about 500 ms.
+- With single-key shortcuts off, no control advertises them in `aria-keyshortcuts` any more.
+- e2e waits for the mobile log dialog to finish closing before pressing `?`; that race had made one run in three fail.
+- Checks: 41 unit and component tests; token-lint clean; axe 110 runs and the text-spacing pass, 0 failing; e2e passed 3 runs in a row; Lighthouse on the list: accessibility, best practices and performance 100, layout shift 0.018.

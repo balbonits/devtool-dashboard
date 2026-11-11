@@ -86,4 +86,12 @@ describe('keyboard shortcuts (R-7)', () => {
     get.mockRestore();
     set.mockRestore();
   });
+
+  it('drops every aria-keyshortcuts when single-key shortcuts are off', () => {
+    localStorage.setItem(SHORTCUTS_KEY, 'off');
+    render(<App demo={null} runs={makeRuns()} />);
+    for (const s of SHORTCUTS.filter((x) => x.single)) {
+      expect(document.querySelector(`[aria-keyshortcuts~="${s.aria}"]`), s.key).toBeNull();
+    }
+  });
 });

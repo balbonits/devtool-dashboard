@@ -5,7 +5,7 @@ import { RunDrawer } from './RunDrawer';
 import { ShortcutsDialog } from './ShortcutsDialog';
 import { ariaFor, moveRow, useShortcutSetting, useShortcuts, type ShortcutActions } from './lib/shortcuts';
 import { closeRun, openRun, useRoute, useWide } from './lib/route';
-import { SkeletonRows, StatusBadge } from './components';
+import { LoadingTable, StatusBadge } from './components';
 import { allGreen, makeRuns } from './lib/data';
 import { DEFAULT_FILTERS, applyFilters, hasFilters, readFilters, services, writeFilters, type Filters } from './lib/filters';
 import { ago, duration } from './lib/format';
@@ -121,9 +121,9 @@ function Dashboard({ demo, initialRuns }: { demo: DemoState; initialRuns?: Run[]
         <header className="dd-head">
           <h1 className="em-focus" tabIndex={-1}>Deploys</h1>
           <form role="search" className="dd-search" onSubmit={(e) => e.preventDefault()}>
-            <Input aria-keyshortcuts={ariaFor('/')} label="Search runs" type="search" placeholder="Service, commit, branch or author" value={filters.q} onChange={(e) => setFilters({ q: e.target.value })} />
+            <Input aria-keyshortcuts={keysOn ? ariaFor('/') : undefined} label="Search runs" type="search" placeholder="Service, commit, branch or author" value={filters.q} onChange={(e) => setFilters({ q: e.target.value })} />
           </form>
-          <Button variant="secondary" aria-keyshortcuts={ariaFor('?')} onClick={() => setKeysOpen(true)}>Keyboard shortcuts</Button>
+          <Button variant="secondary" aria-keyshortcuts={keysOn ? ariaFor('?') : undefined} onClick={() => setKeysOpen(true)}>Keyboard shortcuts</Button>
         </header>
         {load.kind === 'error' && (
           <div role="alert" className="dd-banner dd-banner--error">
@@ -141,7 +141,7 @@ function Dashboard({ demo, initialRuns }: { demo: DemoState; initialRuns?: Run[]
             id: env.id,
             label: env.label,
             // Only the selected panel is rendered, so there is one filter bar and one table in the page.
-            content: env.id === filters.env ? <EnvPanel load={load} filters={filters} setFilters={setFilters} /> : null,
+            content: env.id === filters.env ? <EnvPanel load={load} filters={filters} setFilters={setFilters} keysOn={keysOn} /> : null,
           }))}
         />
       </main>
@@ -157,7 +157,7 @@ function Dashboard({ demo, initialRuns }: { demo: DemoState; initialRuns?: Run[]
   );
 }
 
-const columns: Column<Run>[] = [
+const makeColumns = (keysOn: boolean): Column<Run>[] => [
   { key: 'status', header: 'Status', sortable: true, render: (r) => <StatusBadge status={r.status} /> },
   { key: 'service', header: 'Service', sortable: true, rowHeader: true },
   { key: 'sha', header: 'Commit', render: (r) => <span className="dd-commit"><code>{r.sha}</code> <span className="dd-msg">{r.message}</span></span> },
@@ -168,23 +168,31 @@ const columns: Column<Run>[] = [
   {
     key: 'id', header: 'Actions',
     render: (r) => (
-      <Button id={`logs-${r.id}`} aria-keyshortcuts={`${ariaFor('j')} ${ariaFor('k')}`} variant="secondary" onClick={() => openRun(r.id)} aria-label={`Open log for ${r.service} ${r.sha}`}>Log</Button>
+      <Button id={`logs-${r.id}`} aria-keyshortcuts={keysOn ? `${ariaFor('j')} ${ariaFor('k')}` : undefined} variant="secondary" onClick={() => openRun(r.id)} aria-label={`Open log for ${r.service} ${r.sha}`}>Log</Button>
     ),
   },
 ];
 
-function EnvPanel({ load, filters, setFilters }: { load: Load; filters: Filters; setFilters: (p: Partial<Filters>) => void }) {
+function EnvPanel({ load, filters, setFilters, keysOn }: { load: Load; filters: Filters; setFilters: (p: Partial<Filters>) => void; keysOn: boolean }) {
   const all = useMemo(() => (load.kind === 'ready' ? load.runs : []), [load]);
   const envRuns = useMemo(() => all.filter((r) => r.env === filters.env), [all, filters.env]);
   const rows = useMemo(() => applyFilters(all, filters), [all, filters]);
   const envLabel = ENVS.find((e) => e.id === filters.env)!.label;
   const clear = () => setFilters({ status: DEFAULT_FILTERS.status, service: '', branch: '', q: '' });
   const healthy = load.kind === 'ready' && !envRuns.some((r) => r.status === 'failed');
+  const columns = useMemo(() => makeColumns(keysOn), [keysOn]);
+  // CA follow-up: the visible count updates at once; the polite status waits until typing settles (~500ms) so it speaks once.
+  const count = `${rows.length} of ${envRuns.length} runs shown`;
+  const [spoken, setSpoken] = useState(count);
+  useEffect(() => {
+    const t = setTimeout(() => setSpoken(count), 500);
+    return () => clearTimeout(t);
+  }, [count]);
 
   return (
     <>
       <div className="dd-filters" role="group" aria-label="Filters">
-        <Select aria-keyshortcuts={ariaFor('f')} label="Status" value={filters.status} onChange={(e) => setFilters({ status: e.target.value as Filters['status'] })}>
+        <Select aria-keyshortcuts={keysOn ? ariaFor('f') : undefined} label="Status" value={filters.status} onChange={(e) => setFilters({ status: e.target.value as Filters['status'] })}>
           <option value="">All statuses</option>
           {STATUSES.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
         </Select>
@@ -195,12 +203,13 @@ function EnvPanel({ load, filters, setFilters }: { load: Load; filters: Filters;
         <Input label="Branch" value={filters.branch} onChange={(e) => setFilters({ branch: e.target.value })} />
         <Button variant="ghost" onClick={clear} disabled={!hasFilters(filters)}>Clear filters</Button>
       </div>
-      {load.kind === 'loading' && <SkeletonRows />}
+      {load.kind === 'loading' && <LoadingTable caption={`${envLabel} runs`} headers={columns.map((c) => String(c.header))} />}
       {load.kind === 'error' && <p className="dd-muted">No runs to show until deploys load.</p>}
       {load.kind === 'ready' && (
         <>
           {healthy && <p className="dd-calm"><StatusBadge status="succeeded" /> All deploys healthy in {envLabel}.</p>}
-          <p className="dd-count" role="status">{rows.length} of {envRuns.length} runs shown</p>
+          <p className="dd-count" aria-hidden="true">{count}</p>
+          <p className="sr-only" role="status">{spoken}</p>
           <Table<Run>
             caption={`${envLabel} runs`}
             columns={columns}

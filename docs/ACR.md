@@ -11,8 +11,8 @@ Based on VPAT® 2.5 Rev 508 edition (Section 508). **Self-assessed** by the buil
 ## Evaluation methods
 - **Automated (`scripts/a11y.mjs`):** axe-core on 11 states (Production, Staging, Preview, failed filter, no results, all green, loading, error, open run log, filtered run log, missing run) at 1280, 900, 414, 375 and 320 px, light and dark, reduced motion: 110 runs with 0 serious or critical violations. The same runs check for page-level horizontal scroll and for controls under 44x44 px. A second pass applies the WCAG 1.4.12 text-spacing styles at 640 px (1280 at 200% zoom) and 320 px and checks for overflow and clipped text: 22 runs, 0 failing.
 - **Keyboard and focus (`scripts/e2e.mjs`):** scripted keyboard flows in Chrome at 1280 and 375 px: the skip link, opening a run with Enter, title and focus on open, Jump to first error, Esc and Back closing with focus returned to the row, deep links, the alert banner action, j and Enter on rows, ? for the shortcuts dialog, shortcuts ignored while typing, all five single keys doing nothing when switched off, the off switch surviving a reload, and an axe run on the open shortcuts dialog.
-- **Unit and component tests (Vitest, Testing Library):** 26 tests, including roles and names, `role=alert` and `role=status` use, and the shortcut list matching the key map.
-- **Lighthouse 13.6 (local build):** accessibility 100 on the list, an open run log and the error state, mobile and desktop.
+- **Unit and component tests (Vitest, Testing Library):** 41 tests, including roles and names, the loading table (`aria-busy`, hidden skeleton rows, one status), the alert region mounting with nothing readable before its text goes in, the debounced count status, `aria-keyshortcuts` dropping when shortcuts are off, the shortcut list matching the key map, and 12 token-lint tests.
+- **Lighthouse 13.6 (local build):** accessibility 100 on the list, an open run log and the error state, mobile and desktop. The list scored accessibility 100 and layout shift 0.018 again after the latest changes.
 - **Screen reader:** **not yet evaluated** with a screen reader. Until a reader pass is recorded in PROGRESS.md (naming the reader, browser and OS), items that depend on announcements rest on markup and automated checks only.
 
 ## Terms
@@ -45,7 +45,7 @@ WCAG 2.0 A/AA rows are the Section 508 baseline. Rows marked 2.1 or 2.2 are extr
 | 1.4.13 Content on Hover or Focus (2.1) | AA | Supports | No hover or focus pop-ups. The log and shortcuts dialog open only on a button press and stay until closed. |
 | 2.1.1 Keyboard | A | Supports | Every function works by keyboard (scripts/e2e.mjs). |
 | 2.1.2 No Keyboard Trap | A | Supports | The modal dialogs keep Tab inside while open and close on Esc; the desktop log panel is non-modal and closes on Esc (e2e). |
-| 2.1.4 Character Key Shortcuts (2.1) | A | Supports | Single-key shortcuts (/ f j k ?) can be turned off with a persisted "Single-key shortcuts" checkbox, never fire in a field or with Ctrl, Alt or Meta held, and the dialog stays reachable from a visible header button (unit tests and e2e). |
+| 2.1.4 Character Key Shortcuts (2.1) | A | Supports | Single-key shortcuts (/ f j k ?) can be turned off with a persisted "Single-key shortcuts" checkbox, never fire in a field or with Ctrl, Alt or Meta held, and the dialog stays reachable from a visible header button. When they're off, no control advertises them in `aria-keyshortcuts` (unit tests and e2e). |
 | 2.2.1 Timing Adjustable | A | Supports | No time limits. |
 | 2.2.2 Pause, Stop, Hide | A | Supports | No moving, blinking or auto-updating content; the loading skeleton is static and the app defines no animations (token lint blocks `@keyframes`). |
 | 2.3.1 Three Flashes or Below Threshold | A | Supports | Nothing flashes. |
@@ -77,7 +77,7 @@ WCAG 2.0 A/AA rows are the Section 508 baseline. Rows marked 2.1 or 2.2 are extr
 | 3.3.7 Redundant Entry (2.2) | A | Not Applicable | No multi-step entry. |
 | 3.3.8 Accessible Authentication (Minimum) (2.2) | AA | Not Applicable | No sign-in. |
 | 4.1.2 Name, Role, Value | A | Supports | Native controls, WAI-ARIA tabs and sortable table headers from Ember UI, native dialogs. axe passes. |
-| 4.1.3 Status Messages (2.1) | AA | Supports | The "n of m runs shown" count and loading text use `role=status`; the failure banner uses `role=alert` only for a new set of failures; the load error uses `role=alert`; toasts use Ember's live region (unit tests). Not yet heard through a screen reader. |
+| 4.1.3 Status Messages (2.1) | AA | Supports | While loading, one polite `role=status` says "Loading runs" and the table is `aria-busy`. The "n of m runs shown" count updates on screen at once, and its `role=status` copy speaks about 500 ms after filtering settles, so typing doesn't queue one message per key. The failure banner's `role=alert` text goes in just after the region mounts, and only for a new set of failures in the session. The load error uses `role=alert`, and toasts use Ember's live region (unit tests). Not yet heard through a screen reader. |
 
 ## Revised Section 508 Chapter 3: Functional Performance Criteria
 | Criteria | Conformance | Remarks |

@@ -86,6 +86,8 @@ for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
   check(true, `${label}: Enter on a row opens its log`);
   await p.keyboard.press('Escape');
   await p.waitForFunction(() => !location.hash.includes('run'));
+  // On mobile the log is a native dialog; wait until it has really closed, or the ? key is (correctly) ignored.
+  await p.waitForFunction(() => !document.querySelector('dialog[open]'));
   // The ? dialog: axe-clean, then switch shortcuts off.
   await p.keyboard.press('?');
   await p.waitForSelector('dialog[open]');

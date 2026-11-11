@@ -122,8 +122,9 @@ for (const width of [320, 1280]) for (const state of STATES) {
     if (m.underModal) { check(sized, `targets ${width} ${state[0]}: ${m.control} target ${m.target} (behind the modal dialog: known issue, size only)`); continue; }
     const gap = KNOWN_GAPS.find((g) => g.id === m.gap);
     if (gap) {
-      // Narrow allowlist: exactly gap.height tall, full width, all hit points land. 44+ means it's fixed: remove the entry.
-      check(w >= MIN && h === gap.height && !m.missed, `targets ${width} ${state[0]}: ${m.control} target ${m.target} is the known ${gap.height}px gap (${gap.id}, a11y-design-system #36)${h >= MIN ? '; it now reaches 44, so remove this KNOWN_GAPS entry' : ''}`);
+      // Narrow allowlist (DASH-EMBER-BUMP removes it): at least gap.floor tall but under 44, full width, all hit points
+      // land. Below the floor fails; 44+ also fails, because it's fixed and the entry must go.
+      check(w >= MIN && h >= gap.floor && h < MIN && !m.missed, `targets ${width} ${state[0]}: ${m.control} target ${m.target} is the known ${gap.floor}px gap (${gap.id}, a11y-design-system #36)${h >= MIN ? '; it now reaches 44, so remove this KNOWN_GAPS entry (DASH-EMBER-BUMP)' : h < gap.floor ? `; below the ${gap.floor}px floor` : ''}`);
       continue;
     }
     if (!sized || m.missed) check(false, `targets ${width} ${state[0]}: ${m.control} box ${m.box}, target ${m.target}${m.missed ? `, ${m.missed} of 5 hit points miss` : ''}`);

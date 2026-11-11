@@ -62,7 +62,7 @@ WCAG 2.0 A/AA rows are the Section 508 baseline. Rows marked 2.1 or 2.2 are extr
 | 2.5.3 Label in Name (2.1) | A | Supports | Accessible names contain the visible label ("Log" in "Open log for ..."). |
 | 2.5.4 Motion Actuation (2.1) | A | Not Applicable | No motion input. |
 | 2.5.7 Dragging Movements (2.2) | AA | Not Applicable | No dragging. |
-| 2.5.8 Target Size (Minimum) (2.2) | AA | Supports | Targets aim for 44px, and all meet WCAG 2.5.8 (24px). Ember v0.2.2's toast Dismiss button has a 42 px target; this app patches it to 44. The environment tabs (Ember tabs) measure 43 px effective, a known Ember v0.2.2 gap fixed upstream in Ember's HIT-PATCH (a11y-design-system #36); this app picks up the fix in the next Ember bump. Inline links in sentences are exempt. See docs/audits/target-size-2026-11-10.md. |
+| 2.5.8 Target Size (Minimum) (2.2) | AA | Supports | All targets meet WCAG 2.5.8 (24px). The project aims for 44px; the environment tabs are 43px effective due to an Ember v0.2.2 tablist clip, fixed upstream in a11y-design-system #36 and removed here by DASH-EMBER-BUMP. |
 | 3.1.1 Language of Page | A | Supports | `lang="en"`. |
 | 3.1.2 Language of Parts | AA | Not Applicable | No other-language passages. |
 | 3.2.1 On Focus | A | Supports | Focus causes no context change. |

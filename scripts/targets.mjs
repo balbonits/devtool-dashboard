@@ -7,11 +7,13 @@
 
 export const MIN = 44;
 
-/** Known gaps the guard allows, narrowly: each must measure exactly `height` px tall (so it fails if it gets worse, and
- *  fails once it is fixed, so the entry can't go stale). Remove with DASH-EMBER-BUMP. */
+/** Known gaps the guard allows, narrowly: a control matching `selector` may be `floor` px tall (so floor - 1 still
+ *  fails) but must stay under 44 (so the check fails once it's fixed and the entry can't go stale).
+ *  DASH-EMBER-BUMP removes this entry (and the .em-btn--sm::before override in src/app.css) once the app uses an Ember
+ *  build with HIT-PATCH, a11y-design-system #36: https://github.com/balbonits/a11y-design-system/pull/36 */
 export const KNOWN_GAPS = [
-  { id: 'em-tab', selector: '.em-tab', height: 43,
-    why: "Ember v0.2.2 .em-tab has margin-bottom:-1px over the .em-tablist border, and the tablist's overflow:auto clips it to 43px; fixed upstream in Ember's HIT-PATCH (a11y-design-system #36)" },
+  { id: 'em-tab', selector: '.em-tab', floor: 43,
+    why: "Ember v0.2.2 .em-tab has margin-bottom:-1px over the .em-tablist border, and the tablist's overflow:auto clips it to 43px; fixed upstream in Ember's HIT-PATCH (a11y-design-system #36), removed here by DASH-EMBER-BUMP" },
 ];
 
 /** Page states to open, as [name, path, open(page) | null, scope selector]. */

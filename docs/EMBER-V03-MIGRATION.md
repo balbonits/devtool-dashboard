@@ -61,18 +61,18 @@ dashboard uses none directly). Values are computed on the running app (light, th
 
 Notes on the table:
 - All 34 names still exist in v0.3, so nothing breaks at build time; the change is visual.
-- Eight tokens the dashboard references are **not defined in v0.2.2**: `--border-width`, `--border-width-strong`,
-  `--target-min` (all used with a fallback in `src/app.css`), and `--radius-sm`, `--radius-md`, `--shadow-raised`,
-  `--focus-ring-*` (used without a fallback, or only in `src/token-lint.test.ts`). On v0.2.2 the fallbacks apply, and
-  `.dd-log` / `kbd` get no radius. On v0.3 neo defines all of them, so they change too (2px borders, 10/12px radii,
-  a 4px offset shadow, a 3px pink focus ring).
+- Eight tokens the dashboard references are **not defined in v0.2.2**, and that's harmless today:
+  `--border-width`, `--border-width-strong` and `--target-min` have fallbacks in `src/app.css` (1px, 4px, 44px);
+  `--radius-sm` and `--radius-md` resolve to 0 (`.dd-log` and `kbd` are square); `--shadow-raised` and
+  `--focus-ring-*` appear only in `src/token-lint.test.ts`. On v0.3 neo defines all of them, so they change too (2px
+  borders, 10/12px radii, a 4px offset shadow, a 3px pink focus ring).
 - The 13 primitives (space, type size, weight) are identical.
 
 ## Fonts
 
 | Font | v0.2.2 | Ember main (`346ad36`) | What the dashboard would have to do |
 |---|---|---|---|
-| Geist Variable (body, `--font-sans`) | Ember dependency `@fontsource-variable/geist` | Removed from Ember's dependencies | Already a dashboard dependency (`package.json`, imported in `src/main.tsx`). Keep it, and point the theme's `--font-body` at it. |
+| Geist Variable (body; v0.3 `--font-body`) | Ember dependency `@fontsource-variable/geist` | Removed from Ember's dependencies | Already a dashboard dependency (`package.json`, imported in `src/main.tsx`). Keep it, and point the theme's `--font-body` at it. |
 | JetBrains Mono Variable (`--font-mono`) | Ember dependency `@fontsource-variable/jetbrains-mono` | Removed; neo names `'JetBrains Mono'` (static) and only Ember's devDependencies have `@fontsource/jetbrains-mono` | Add `@fontsource-variable/jetbrains-mono` (or `@fontsource/jetbrains-mono`) to the dashboard and import it, or accept the fallback chain. |
 | Instrument Serif | Ember dependency `@fontsource/instrument-serif` | Removed | Not used by the dashboard; nothing to add. |
 | Archivo / Archivo Black (neo `--font-body` / `--font-display`) | n/a | Ember devDependencies only | Only needed if the dashboard adopted neo's type, which it shouldn't. A dashboard theme sets its own font tokens. |
@@ -126,8 +126,12 @@ focus ring instead of the 2px teal one, a blue (light) or lime (dark) accent ins
 
 ## What Creatives would need to define (a dashboard theme on v0.3)
 
-A theme registered the v0.3 way (a `[data-theme="…"]` block with light and dark modes, set on `<html>`), that keeps
-today's identity. Today's values (v0.2.2) are the starting point:
+A theme registered the v0.3 way (a `[data-theme="…"]` block with light and dark modes, set on `<html>`). Per PROC-2 it
+is the dashboard's own identity, distinct from the job tracker's (which is also on v0.2.2 today). Today's values below
+are a starting point, not a copy-forward. A registered theme must define **every locked v0.3 token**, not only the
+ones the dashboard uses today.
+
+What the dashboard uses today (v0.2.2 values):
 
 - **Background and surfaces:** `--color-bg` `#f4f1ea` / dark `#12110f`; `--surface` `#fffdf8` / `#1b1a17`;
   `--surface-muted` `#e9e4d8` / `#26241f`.
@@ -135,20 +139,33 @@ today's identity. Today's values (v0.2.2) are the starting point:
   `#ff8a4c`; status colors `--danger`, `--success`, `--info` as in the table above.
 - **Borders:** 1px, `--border` `#6b7077` / `#8a8479`, `--border-subtle` `#d9d3c7` / `#26241f`; `--border-width` 1px,
   `--border-width-strong` 4px (today's fallback).
-- **Radii:** Ember v0.2.2 `--radius` is 2px (near-square). Decide `--radius-sm` and `--radius-md`, which are 0 today.
-- **Shadows:** none today. `--shadow-raised` needs a value (likely `none`), and the button and card shadows must be
-  off.
-- **Focus ring:** 2px solid teal (`#0f5f73` light, `#8fd3e0` dark), offset 2px → `--focus-ring-width`,
-  `--focus-ring-offset`, `--focus-ring-color` per mode, ≥3:1 against both surfaces.
-- **Tabs:** today's look is a 1px tablist rule with a 2px accent underline on the selected tab, muted unselected text
-  and a surface-muted hover. The v0.3 tab component tokens need values that match, plus forced-colors behaviour
-  (HIT-PATCH `390b652`).
-- **Type:** Geist Variable body, JetBrains Mono Variable for code and status glyphs (see Fonts).
-- Contrast for every text/surface pair at ≥4.5:1 and non-text ≥3:1, in both modes. Ember's `npm run contrast` and
-  `lint:colors` can check a registered theme.
+- **Radii:** Ember v0.2.2 `--radius` is 2px (near-square); `--radius-sm` and `--radius-md` are 0 today.
+- **Shadows:** none today (`--shadow-raised`).
+- **Focus ring:** 2px solid teal (`#0f5f73` light, `#8fd3e0` dark), offset 2px.
+- **Tabs:** a 1px tablist rule with a 2px accent underline on the selected tab, muted unselected text and a
+  surface-muted hover, plus forced-colors behaviour (HIT-PATCH `390b652`).
+- **Type:** `--font-body` Geist Variable, `--font-mono` JetBrains Mono Variable for code and status glyphs (see Fonts).
 
-Every value goes through Chief Architect for token naming and Creatives for identity. Nothing is guessed in
-code.
+Also required by the v0.3 contract (Chief Architect, 2026-11-10):
+
+- **Shapes** (ARCH-REVIEW Addendum 5): `--radius-sm`, `--radius-md`, `--radius-lg`, `--radius-xl`, `--radius-full`.
+- **Shadows and motion:** `--shadow-raised`, `--shadow-press`, `--press-offset` (Addendum 8: a length ≥ 0),
+  `--tilt`, `--lift`.
+- **Focus ring:** `--focus-ring-width`, `--focus-ring-offset`, `--focus-ring-style`, `--focus-ring-color` per mode.
+- **Controls:** `--control-height`, `--control-padding-x`, `--control-gap`.
+- **Decoration:** `--divider-shape`, `--highlight`, `--highlight-contrast`.
+- **Scrim:** `--scrim` per mode (Addendum 7: composite gates ≥3:1).
+- **Not a theme choice:** `--target-min` stays 44px.
+
+Gates:
+
+- The focus ring is ≥3:1 against `--color-bg`, `--surface`, `--surface-muted` and `--tabs-track`, in both modes.
+- `--border-subtle` is decorative only: in dark today it equals `--surface-muted` (`#26241f`), 1:1. Every component
+  boundary uses `--border` at ≥3:1.
+- Every text/surface pair ≥4.5:1 and non-text ≥3:1, in both modes. Ember's `npm run contrast` and `lint:colors` can
+  check a registered theme.
+
+Every value goes through Chief Architect for token naming and Creatives for identity. Nothing is guessed in code.
 
 ## Cards afterwards
 
@@ -159,6 +176,6 @@ code.
    packages John approves. In the same card, remove the `KNOWN_GAPS` `.em-tab` entry in `scripts/targets.mjs` and the
    `.ember .em-btn--sm::before` override in `src/app.css`; confirm the tabs and the toast Dismiss are ≥44 effective at
    320/375/1280, light and dark; set ACR 2.5.8 to "All targets meet WCAG 2.5.8 (24px), and every standalone control
-   meets the project's 44px goal." Done means the 24-pair pixel diff is near zero, except for the tab underline and
-   the hit areas.
+   meets the project's 44px goal." Done means the build matches the approved DASH-THEME spec, with a
+   before/after pixel diff in the PR.
 3. **Re-gate:** lint, typecheck, vitest, build, e2e, a11y (axe 0), target-audit, then QA, then CA.

@@ -52,7 +52,7 @@ describe('dashboard', () => {
     const { container } = render(<App demo="loading" />);
     const table = screen.getByRole('table', { name: 'Production runs' });
     expect(table).toHaveAttribute('aria-busy', 'true');
-    const skel = container.querySelectorAll('tbody tr');
+    const skel = table.querySelectorAll('tbody tr');
     expect(skel.length).toBeGreaterThan(0);
     skel.forEach((tr) => expect(tr).toHaveAttribute('aria-hidden', 'true'));
     // The empty Ember toast region is also role=status; it stays silent, so leave it out.

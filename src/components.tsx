@@ -13,15 +13,29 @@ export function StatusBadge({ status }: { status: Status }) {
   );
 }
 
-export function SkeletonRows({ rows = 6 }: { rows?: number }) {
+/**
+ * Loading state (DASH-SPEC line 31, CA ruling 4): the table is already in place with aria-busy="true",
+ * its skeleton rows are aria-hidden, and one polite status says "Loading runs". Nothing animates.
+ * Once data lands this whole table is replaced by the real one, so no aria-busy is left behind.
+ */
+export function LoadingTable({ caption, headers, rows = 6 }: { caption: string; headers: string[]; rows?: number }) {
   return (
-    <div className="dd-skeleton" role="status" aria-live="polite">
-      <span className="sr-only">Loading deploys</span>
-      {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="dd-skel-row" aria-hidden="true">
-          <span className="dd-skel-line" /><span className="dd-skel-line" /><span className="dd-skel-line" />
-        </div>
-      ))}
-    </div>
+    <>
+      <p className="dd-count" role="status">Loading runs</p>
+      {/* Same scroll region as Ember's Table, so the wide table stays reachable by keyboard at 320px. */}
+      <div className="em-table-wrap dd-loading" role="region" aria-labelledby="dd-loading-caption" tabIndex={0}>
+        <table className="em-table em-table--dense" aria-busy="true">
+          <caption id="dd-loading-caption">{caption}</caption>
+          <thead><tr>{headers.map((h) => <th key={h} scope="col">{h}</th>)}</tr></thead>
+          <tbody>
+            {Array.from({ length: rows }, (_, i) => (
+              <tr key={i} className="dd-skel-row" aria-hidden="true">
+                {headers.map((h) => <td key={h}><span className="dd-skel-line" /></td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }

@@ -14,6 +14,7 @@ const pages = [
   ['production', ''], ['staging', '?env=staging'], ['preview', '?env=preview'],
   ['failed-filter', '?status=failed'], ['no-results', '?q=no-such-run'],
   ['all-green', '?state=green'], ['loading', '?state=loading'], ['error', '?state=error'],
+  ['run-log', '#/run/run-01'], ['run-log-filtered', '?status=failed&service=checkout-api#/run/run-01'], ['run-missing', '#/run/run-99'],
 ];
 const browser = await chromium.launch({ executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 let failing = 0, runs = 0, minor = 0;

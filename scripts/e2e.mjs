@@ -106,6 +106,49 @@ for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
   check(!(await p.getByRole('checkbox', { name: /Single-key shortcuts/ }).isChecked()), `${label}: header button still opens the dialog, setting kept`);
   await p.context().close();
 }
+// DASH-MODAL-TOAST: in the run-log modal (narrow), Copy link gives feedback in place, not via the page toast
+// (which would sit behind the modal, inert). Wide screens (side panel, no modal) keep the toast.
+for (const [label, width, fail] of [['320 modal', 320, false], ['320 modal, copy fails', 320, true], ['1280 drawer', 1280, false], ['1280 drawer, copy fails', 1280, true]]) {
+  const ctx = await browser.newContext({ viewport: { width, height: 800 }, reducedMotion: 'reduce', permissions: ['clipboard-read', 'clipboard-write'] });
+  if (fail) await ctx.addInitScript(() => { navigator.clipboard.writeText = () => Promise.reject(new Error('denied')); });
+  const p = await ctx.newPage();
+  await p.goto(base + '#/run/run-01', { waitUntil: 'networkidle' });
+  const scope = width < 1024 ? p.locator('dialog[open]') : p.locator('.dd-drawer');
+  await scope.waitFor();
+  check((await p.locator('dialog:modal').count()) === (width < 1024 ? 1 : 0), `${label}: run log is ${width < 1024 ? 'a modal dialog' : 'the side panel'}`);
+  const btn = scope.getByRole('button', { name: 'Copy link to this run' });
+  const w0 = (await btn.boundingBox()).width;
+  await btn.click();
+  await p.waitForTimeout(150);
+  const toasts = await p.locator('.em-toast-viewport .em-toast, .em-toast-viewport [role=status], .em-toast-viewport [role=alert]').count();
+  if (width < 1024) {
+    check(toasts === 0, `${label}: no page toast behind the modal (${toasts})`);
+    const status = await scope.locator('[role=status]').allTextContents();
+    const want = fail ? "Couldn't copy link" : 'Link copied';
+    check(status.some((t) => t.includes(want)), `${label}: status in the dialog says "${want}" (${JSON.stringify(status)})`);
+    if (fail) {
+      check(await btn.count() === 1, `${label}: button keeps its label when the copy fails`);
+    } else {
+      const copied = scope.getByRole('button', { name: 'Copied', exact: true });
+      const named = await copied.count() === 1;
+      check(named, `${label}: button's accessible name is Copied`);
+      if (named) {
+      const w1 = (await copied.boundingBox()).width;
+      check(Math.abs(w1 - w0) < 0.5, `${label}: button width stays put (${w0} -> ${w1})`);
+      const bh = (await copied.boundingBox()).height;
+      check(bh >= 44, `${label}: Copied button is 44px tall (${Math.round(w1)}x${Math.round(bh)})`);
+      await p.waitForTimeout(2300);
+      check(await scope.getByRole('button', { name: 'Copy link to this run' }).count() === 1, `${label}: label reverts after about 2 s`);
+      }
+    }
+  } else {
+    check(toasts > 0, `${label}: page toast still shows (${toasts})`);
+    const toastText = await p.locator('.em-toast-viewport').innerText();
+    check(toastText.includes(fail ? "Couldn't copy the link" : 'Link copied'), `${label}: toast text unchanged (${JSON.stringify(toastText.slice(0, 80))})`);
+    check(await scope.getByRole('button', { name: 'Copy link to this run' }).count() === 1, `${label}: button label unchanged`);
+  }
+  await ctx.close();
+}
 await browser.close();
 console.log(failed ? `${failed} e2e checks failed` : 'e2e: all checks passed');
 process.exit(failed ? 1 : 0);

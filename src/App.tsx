@@ -29,10 +29,17 @@ export function App({ demo = demoFromUrl(window.location.search), runs }: { demo
 type Load = { kind: 'loading' } | { kind: 'error' } | { kind: 'ready'; runs: Run[] };
 
 function useRuns(demo: DemoState, initial?: Run[]) {
-  const [load, setLoad] = useState<Load>(() => (initial ? { kind: 'ready', runs: initial } : { kind: 'loading' }));
+  // Mock data is local, so the normal and all-green views render ready on first paint (no skeleton flash, no layout shift).
+  // ?state=loading and ?state=error preview the other states, and Retry goes through the loading state.
+  const [load, setLoad] = useState<Load>(() => {
+    if (initial) return { kind: 'ready', runs: initial };
+    if (demo === null) return { kind: 'ready', runs: makeRuns() };
+    if (demo === 'green') return { kind: 'ready', runs: allGreen(makeRuns()) };
+    return { kind: 'loading' };
+  });
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    if (initial || demo === 'loading') return;
+    if (initial || demo === 'loading' || (attempt === 0 && demo !== 'error')) return;
     // Mock fetch: no backend in this prototype.
     const t = setTimeout(() => {
       if (demo === 'error' && attempt === 0) setLoad({ kind: 'error' });

@@ -13,6 +13,6 @@ describe('token-lint', () => {
     expect(lintSource('a.css', '.x { border-radius: 4px; color: #fff; }')).toHaveLength(2);
   });
   it('catches a retired name in a .tsx file too', () => {
-    expect(lintSource('a.tsx', "const s = { borderRadius: 'var(--radius)' };")).toHaveLength(1);
+    expect(lintSource('a.tsx', `const s = { borderRadius: 'var(${RETIRED[0]})' };`)).toHaveLength(1);
   });
 });

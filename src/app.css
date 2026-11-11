@@ -1,5 +1,5 @@
 /* Dev dashboard, kinetic theme (HANDOFF @938e642). Token-only: colors, radii, borders, focus and motion come from the
-   locked R-2 names (Addendum 5 and 7), today from src/styles/kinetic-shim.css and from Ember v0.3.1 once it ships.
+   locked R-2 names (Addendum 5, 7, 8 and 10), defined by Ember's registered kinetic theme (ember-ui pinned to Ember main 2d59d7b).
    Shape properties use only var(--…), 0 or none. scripts/token-lint.mjs enforces this in CI.
    Mobile-first: min-width breakpoints only (xs 480, sm 700, md 900, lg 1024). */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
@@ -7,11 +7,11 @@ html { scroll-padding-top: 9rem; }
 body { margin: 0; background: var(--color-bg); color: var(--text); font-family: var(--font-body); font-size: 1.0625rem; line-height: 1.6; }
 .dd-mono, code, kbd { font-family: var(--font-mono); }
 .dd-muted { color: var(--text-muted); }
-.dd-app { min-height: 100vh; display: flex; flex-direction: column; font-family: var(--font-body); } /* body.ember sets Ember v0.2.2's --font-sans (Geist); kinetic text uses --font-body */
+.dd-app { min-height: 100vh; display: flex; flex-direction: column; font-family: var(--font-body); }
 .dd-wrap { width: 100%; max-width: 1320px; margin-inline: auto; padding-inline: 1.25rem; box-sizing: border-box; }
 .dd-wrap > *, .dd-filters > *, .dd-envbar > * { min-width: 0; }
 
-/* Focus: 3px solid ring, 3px offset, on everything (H-4). Replaces Ember v0.2.2's ring, which reads the retired name. */
+/* Focus: 3px solid ring, 3px offset, on everything (H-4), including the dashboard's own controls Ember doesn't style. */
 .dd-app :focus-visible, .dd-dialog :focus-visible { outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color); outline-offset: var(--focus-ring-offset); }
 #main:focus, h1:focus, h2:focus { outline: 0; }
 #main h1:focus-visible, .dd-dialog h2:focus-visible { outline: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color); }
@@ -48,20 +48,15 @@ body { margin: 0; background: var(--color-bg); color: var(--text); font-family: 
 .dd-kq { font-family: var(--font-mono); font-size: 1.25rem; }
 .dd-kl { display: none; }
 
-/* Buttons (H-4): 2px border, --radius-md, 48px; hover inverts; press moves 1px. Overrides Ember v0.2.2's button, which
-   reads the retired radius name; this block goes away with the v0.3.1 swap. */
-.dd-app .em-btn, .dd-dialog .em-btn { min-height: var(--control-height); padding-inline: var(--control-padding-x); gap: var(--control-gap); font-size: 1rem; font-weight: 600; border: var(--border-width) solid var(--border); border-radius: var(--radius-md); box-shadow: none; transition: background-color var(--duration-fast) var(--ease-press), color var(--duration-fast) var(--ease-press), transform var(--duration-fast) var(--ease-press); }
-.dd-app .em-btn--secondary, .dd-dialog .em-btn--secondary { background: var(--color-bg); color: var(--text); }
-.dd-app .em-btn--secondary:hover:not(:disabled), .dd-dialog .em-btn--secondary:hover:not(:disabled) { background: var(--text); color: var(--color-bg); }
-.dd-app .em-btn--primary, .dd-dialog .em-btn--primary { background: var(--accent); border-color: var(--accent); color: var(--accent-contrast); }
-.dd-app .em-btn--primary:hover:not(:disabled), .dd-dialog .em-btn--primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
-.dd-app .em-btn--danger, .dd-dialog .em-btn--danger { background: var(--danger); border-color: var(--danger); color: var(--danger-contrast); }
-.dd-app .em-btn--danger:hover:not(:disabled) { background: var(--danger-hover); border-color: var(--danger-hover); }
-.dd-app .em-btn:active:not(:disabled), .dd-dialog .em-btn:active:not(:disabled) { transform: translateY(1px); }
+/* Buttons (H-4): size, border, radius, the inverted hover (Addendum 10) and the 1px press (Addendum 8, 0 under reduced
+   motion) all come from Ember's kinetic theme. Only the HANDOFF's label type, the page-coloured secondary fill and a
+   readable disabled state are set here. */
+.dd-app .em-btn, .dd-dialog .em-btn { font-size: 1rem; font-weight: 600; }
+.dd-app .em-btn--secondary, .dd-dialog .em-btn--secondary { background: var(--color-bg); }
 .dd-app .em-btn:disabled, .dd-dialog .em-btn:disabled { background: var(--surface-muted); color: var(--text-muted); border: var(--border-width) solid var(--border-subtle); cursor: not-allowed; opacity: 1; }
 .dd-hint { margin: .35rem 0 0; font-size: 1rem; color: var(--text-muted); }
 
-/* Fields (H-4): 48px, 2px bottom rule only (Ember v0.2.2 override, as above). */
+/* Fields (H-4): 48px, 2px bottom rule only (Ember's field has a full border, so the HANDOFF's underline is set here). */
 .dd-app .em-control { width: 100%; min-height: var(--control-height); padding: .4rem 0; font-size: 1.1rem; font-family: var(--font-body); background: var(--color-bg); color: var(--text); border: 0; border-bottom: var(--border-width) solid var(--border); border-radius: var(--radius-sm); box-sizing: border-box; }
 /* H-1: the field hint sits under the field (visual order only; it's tied to the field by aria-describedby). */
 .dd-app .em-field { display: flex; flex-direction: column; }
@@ -138,6 +133,12 @@ body { margin: 0; background: var(--color-bg); color: var(--text); font-family: 
 .dd-run-commit { margin: 0 0 1rem; overflow-wrap: anywhere; }
 .dd-run-actions { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .75rem; margin-bottom: 1rem; }
 .dd-with-hint { display: inline-flex; flex-direction: column; align-items: flex-start; }
+/* DASH-MODAL-TOAST: the Copy link label swap keeps the button's width (both labels share one grid cell; the inactive one
+   is hidden), and the status line reserves two lines while empty (the failure text wraps to two at 320), so nothing moves. No transition. */
+.dd-swap { display: inline-grid; }
+.dd-swap > span { grid-area: 1 / 1; }
+.dd-swap > .dd-swap-off { visibility: hidden; }
+.dd-copy-status { margin: -.25rem 0 1rem; font-size: .9rem; line-height: 1.5; min-height: 3em; color: var(--text); }
 .dd-run-link { margin: 0 0 1rem; font-family: var(--font-mono); font-size: .85rem; user-select: all; overflow-wrap: anywhere; }
 .dd-log-region { overflow-x: auto; padding: .75rem 0; background: var(--surface-muted); border-top: var(--border-width) solid var(--border); }
 .dd-log-region > p, .dd-log-error-block { margin: 0; padding: 0 1rem; }
@@ -178,6 +179,5 @@ body { margin: 0; background: var(--color-bg); color: var(--text); font-family: 
   @starting-style { .dd-run-dialog[open] { transform: translateX(40px); opacity: 0; } }
 }
 @media (prefers-reduced-motion: reduce) {
-  .dd-app .em-btn, .dd-dialog .em-btn, .dd-run-dialog { transition: none; }
-  .dd-app .em-btn:active:not(:disabled), .dd-dialog .em-btn:active:not(:disabled) { transform: none; }
+  .dd-run-dialog { transition: none; }
 }

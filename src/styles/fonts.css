@@ -1,5 +1,5 @@
 /* Self-hosted kinetic fonts (CTE 2026-11-10). Files and sources: public/fonts/SOURCE.md (google/fonts, OFL 1.1).
-   font-display: swap, and metric-matched local fallbacks (size-adjust + ascent/descent overrides) so the swap causes no layout shift. */
+   font-display: swap. The family names match Ember kinetic's --font-display, --font-body and --font-mono. */
 @font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-weight: 300; font-display: swap; src: url('/fonts/bricolage-grotesque-300-latin.woff2') format('woff2'); }
 @font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-weight: 700; font-display: swap; src: url('/fonts/bricolage-grotesque-700-latin.woff2') format('woff2'); }
 @font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-weight: 800; font-display: swap; src: url('/fonts/bricolage-grotesque-800-latin.woff2') format('woff2'); }
@@ -8,7 +8,3 @@
 @font-face { font-family: 'Instrument Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url('/fonts/instrument-sans-600-latin.woff2') format('woff2'); }
 @font-face { font-family: 'IBM Plex Mono'; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/ibm-plex-mono-400-latin.woff2') format('woff2'); }
 
-/* Fallbacks: average advance width and vertical metrics measured against Arial/Liberation Sans and Courier New/Liberation Mono. */
-@font-face { font-family: 'Bricolage Grotesque Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); size-adjust: 92.8%; ascent-override: 100.2%; descent-override: 29.1%; line-gap-override: 0%; }
-@font-face { font-family: 'Instrument Sans Fallback'; src: local('Arial'), local('Liberation Sans'), local('Helvetica'); size-adjust: 102.9%; ascent-override: 94.3%; descent-override: 24.3%; line-gap-override: 0%; }
-@font-face { font-family: 'IBM Plex Mono Fallback'; src: local('Courier New'), local('Liberation Mono'), local('Courier'); size-adjust: 100%; ascent-override: 102.5%; descent-override: 27.5%; line-gap-override: 0%; }

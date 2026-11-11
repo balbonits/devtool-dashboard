@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",
-    "ember-ui": "github:balbonits/a11y-design-system#v0.2.2",
+    "ember-ui": "github:balbonits/a11y-design-system#2d59d7b9d00b636f3a2bf88bbcebebb5382f43b9",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

@@ -1,4 +1,4 @@
-import { Button, ToastProvider, useToast } from 'ember-ui';
+import { Button } from 'ember-ui';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { StatusBadge } from './components';
 import { ago, duration } from './lib/format';
@@ -7,7 +7,8 @@ import type { Run } from './lib/types';
 /**
  * Native <dialog> opened with showModal() at every width (HANDOFF H-4, Known issue 6): a centered modal below 1024px,
  * a full-height right drawer from 1024px (CSS only). The h2 takes focus on open; Esc and Close close it, and the caller
- * returns focus to the row's "Open log". Toasts live inside it so they show in the top layer above the scrim.
+ * returns focus to the row's "Open log". Toasts shown while it's open (e.g. from the shortcuts switch) render in Ember's
+ * modal toast outlet inside it (a11y-design-system #51), so the dialog needs no ToastProvider of its own.
  */
 export function Dialog({ labelledBy, className, onClose, children }: { labelledBy: string; className?: string; onClose: () => void; children: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -28,12 +29,20 @@ export function Dialog({ labelledBy, className, onClose, children }: { labelledB
       // The browser's own Esc handling would close the dialog without telling React; route it through onClose instead.
       onCancel={(e) => { e.preventDefault(); onClose(); }}
     >
-      <ToastProvider>{children}</ToastProvider>
+      {children}
     </dialog>
   );
 }
 
 type LogLoad = 'loading' | 'error' | 'ready';
+
+/** Copy-link feedback (DASH-MODAL-TOAST, CA ruling for #9): the run log is a modal dialog at every width, so the
+ *  confirmation is a visible role=status line in the dialog (rendered empty on open, then filled, so it's announced)
+ *  and the button label reads "Copied" for 2 s. The label swap is visual only: the button's name is always its visible
+ *  text, and the status line is the announcement. */
+const COPIED_MS = 2000;
+const COPY_OK = 'Link copied';
+const COPY_FAIL = "Couldn't copy link. Select it below and copy it by hand.";
 
 export function RunDialog({ run, onClose, logFails = false }: { run: Run | undefined; onClose: () => void; logFails?: boolean }) {
   const title = run ? `${run.service} run ${run.sha}` : 'Run not found';
@@ -55,7 +64,11 @@ export function RunDialog({ run, onClose, logFails = false }: { run: Run | undef
 }
 
 function RunBody({ run, onClose, logFails }: { run: Run; onClose: () => void; logFails: boolean }) {
-  const toast = useToast();
+  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState('');
+  const labelTimer = useRef<number | undefined>(undefined);
+  const statusTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => { window.clearTimeout(labelTimer.current); window.clearTimeout(statusTimer.current); }, []);
   const [log, setLog] = useState<LogLoad>('loading');
   const [failNext, setFailNext] = useState(logFails);
   useEffect(() => {
@@ -75,12 +88,19 @@ function RunBody({ run, onClose, logFails }: { run: Run; onClose: () => void; lo
     el?.focus();
   };
   const copy = async () => {
+    let ok = true;
     try {
       await navigator.clipboard.writeText(link);
-      toast({ tone: 'success', title: 'Link copied' });
     } catch {
-      toast({ tone: 'error', title: "Couldn't copy the link. Select it and copy it by hand." });
+      ok = false;
     }
+    window.clearTimeout(labelTimer.current);
+    setCopied(ok);
+    if (ok) labelTimer.current = window.setTimeout(() => setCopied(false), COPIED_MS);
+    // Clear, then set on a later task, so a repeat copy changes the text and is announced again.
+    window.clearTimeout(statusTimer.current);
+    setStatus('');
+    statusTimer.current = window.setTimeout(() => setStatus(ok ? COPY_OK : COPY_FAIL), 100);
   };
   const noErrors = log === 'ready' && firstError < 0;
 
@@ -97,8 +117,14 @@ function RunBody({ run, onClose, logFails }: { run: Run; onClose: () => void; lo
           <Button variant="secondary" onClick={jump} disabled={log !== 'ready' || noErrors} aria-describedby={noErrors ? 'dd-jump-hint' : undefined}>Jump to first error</Button>
           {noErrors && <span className="dd-hint" id="dd-jump-hint">No errors in this log.</span>}
         </span>
-        <Button variant="primary" onClick={copy}>Copy link to this run</Button>
+        <Button variant="primary" onClick={() => void copy()}>
+          <span className="dd-swap">
+            <span className={copied ? 'dd-swap-off' : undefined} aria-hidden={copied || undefined}>Copy link to this run</span>
+            <span className={copied ? undefined : 'dd-swap-off'} aria-hidden={copied ? undefined : true}>Copied</span>
+          </span>
+        </Button>
       </div>
+      <p className="dd-copy-status" role="status">{status}</p>
       <p className="dd-run-link"><span className="sr-only">Link to this run: </span>{link}</p>
       <div className="dd-log-region" role="region" aria-label="Log output" tabIndex={0} aria-busy={log === 'loading' || undefined}>
         {log === 'loading' && <p className="dd-muted" role="status">Loading log</p>}

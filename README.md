@@ -28,7 +28,8 @@ npm run dev           # http://localhost:5173/ux/dev-dashboard/
 npm run typecheck && npm run lint && npm test
 npm run build && npm run preview
 npm run test:a11y     # axe + overflow + 44px targets at 5 widths, light and dark (needs Chrome and a served build)
-npm run test:e2e      # run links, focus, the log drawer and shortcuts in a real browser (same needs)
+npm run test:e2e      # run links, focus, the log drawer, shortcuts and 44px targets in a real browser (same needs)
+node scripts/target-audit.mjs <url>   # read-only table of every control's size and target (docs/audits/)
 ```
 
 ## License

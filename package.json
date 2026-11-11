@@ -1,0 +1,49 @@
+{
+  "name": "devtool-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An internal deploy dashboard prototype built with Ember UI, by John Dilig. UX case study project.",
+  "type": "module",
+  "license": "MIT",
+  "author": "John Dilig",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/balbonits/devtool-dashboard.git"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4174",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . && node scripts/token-lint.mjs",
+    "test": "vitest run",
+    "test:a11y": "node scripts/a11y.mjs",
+    "lint:tokens": "node scripts/token-lint.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/geist": "^5.3.0",
+    "ember-ui": "github:balbonits/a11y-design-system#v0.2.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.9",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "axe-core": "^4.14.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
+    "jsdom": "^31.0.0",
+    "playwright-core": "^1.65.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^6.4.6",
+    "vitest": "^3.2.7"
+  }
+}

@@ -35,4 +35,4 @@ Log drawer, alert banner, run links with title/focus/scroll handling (R-5), keyb
 - Shape tokens now use only the locked R-2 names: `--radius-sm` (skip link) and `--radius-md` (calm note, banner). Ember v0.2.2 doesn't ship those yet, so corners stay square until v0.3.0. `--border-width` and `--target-min` keep a fallback until then.
 - Loading now matches DASH-SPEC line 31: the table is in place with `aria-busy="true"`, its skeleton rows are `aria-hidden`, one polite status says "Loading runs", and nothing animates. The real table replaces it when data lands.
 - token-lint also fails on retired token names (exact match, so `--focus-ring-color` still passes), with tests that plant each one.
-- Checks: 28 unit tests, token-lint clean, axe 80 runs with 0 failing.
+- Checks: 26 unit tests (12 of them token-lint), token-lint clean, axe 80 runs with 0 failing.

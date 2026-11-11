@@ -1,4 +1,4 @@
-// Browser checks for R-5 (run links: title, focus, scroll), the log drawer and R-7 (single-key shortcuts and their off switch), in the right drawer (1024 and up) and the centred modal (below 1024).
+// Browser checks for R-5 (run links: title, focus, scroll), the log drawer, the ticker and R-7 (single-key shortcuts and their off switch), in the right drawer (1024 and up) and the centred modal (below 1024).
 // Usage: node scripts/e2e.mjs [baseUrl]   (default http://127.0.0.1:4174/ux/dev-dashboard/)
 import { chromium } from 'playwright-core';
 import { readFileSync } from 'node:fs';
@@ -106,6 +106,39 @@ for (const [label, width] of [['desktop', 1280], ['tablet', 1024], ['mobile', 37
   check(still, `${label}: with shortcuts off, / f j k ? do nothing after a reload`);
   await p.getByRole('button', { name: 'Keyboard shortcuts' }).click();
   check(!(await p.getByRole('checkbox', { name: /Single-key shortcuts/ }).isChecked()), `${label}: header button still opens the dialog, setting kept`);
+  await p.context().close();
+}
+// Ticker (Creatives 2026-11-10, WCAG 2.2.2): WAAPI marquee, visible Pause/Play after the header controls,
+// starts paused under reduced motion, holds still on hover and on focus inside, moving copy aria-hidden.
+for (const [width, rm] of [[320, 'no-preference'], [375, 'reduce'], [1280, 'no-preference']]) {
+  const label = `ticker ${width} ${rm}`;
+  const p = await (await browser.newContext({ viewport: { width, height: 800 }, reducedMotion: rm })).newPage();
+  await p.goto(base, { waitUntil: 'networkidle' });
+  const x = () => p.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector('.dd-ticker-track')).transform).m41);
+  const moving = async () => { const a = await x(); await p.waitForTimeout(400); return a !== (await x()); };
+  const btn = p.locator('.dd-ticker button');
+  const want = rm === 'reduce' ? 'Play ticker' : 'Pause ticker';
+  check((await btn.textContent()) === want && (await moving()) === (rm !== 'reduce'), `${label}: starts ${rm === 'reduce' ? 'paused' : 'moving'} with "${want}"`);
+  const bb = await btn.boundingBox();
+  check(bb.width >= 44 && bb.height >= 44, `${label}: button is ${Math.round(bb.width)}x${Math.round(bb.height)}`);
+  const names = await p.evaluate(() => { const t = document.querySelector('.dd-ticker'); return { hidden: t.querySelector('.dd-ticker-track').getAttribute('aria-hidden'), sr: t.querySelector('.sr-only')?.textContent, kf: document.querySelector('.dd-ticker-track').getAnimations().length }; });
+  check(names.hidden === 'true' && /Accessible by default\. Keyboard first\./.test(names.sr || '') && names.kf === 1, `${label}: moving copy aria-hidden, sentence version for screen readers, one WAAPI animation`);
+  const order = [];
+  await p.keyboard.press('Tab');
+  for (let i = 0; i < 4; i++) { await p.keyboard.press('Tab'); order.push(await p.evaluate(() => (document.activeElement.getAttribute('aria-label') || document.activeElement.textContent || '').trim())); }
+  check(order[1] === 'Dark mode' || order[1] === 'Light mode', `${label}: mode toggle follows the logo`);
+  check(/ticker$/.test(order[2]) && order[3] === 'Keyboard shortcuts', `${label}: ticker button sits between the header controls and "Keyboard shortcuts" (${order.join(' > ')})`);
+  if (rm === 'reduce') { await btn.click(); await p.mouse.move(5, 790); await p.locator('h1').focus(); await p.waitForTimeout(100); }
+  check(await moving(), `${label}: moving after ${rm === 'reduce' ? 'Play' : 'load'}`);
+  await btn.focus(); await p.waitForTimeout(100); // one React render
+  check(!(await moving()), `${label}: holds still while focus is inside`);
+  await p.locator('h1').focus();
+  await p.locator('.dd-ticker-clip').hover(); await p.waitForTimeout(100);
+  check(!(await moving()), `${label}: holds still on hover`);
+  await p.mouse.move(5, 790);
+  check(await moving(), `${label}: moves again after hover and focus leave`);
+  await btn.click(); await p.mouse.move(5, 790); await p.locator('h1').focus(); await p.waitForTimeout(100);
+  check((await btn.textContent()) === 'Play ticker' && !(await moving()), `${label}: "Pause ticker" stops it and becomes "Play ticker"`);
   await p.context().close();
 }
 await browser.close();

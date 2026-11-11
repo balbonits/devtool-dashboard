@@ -25,6 +25,12 @@ body { margin: 0; background: var(--color-bg); color: var(--text); font-family: 
 .dd-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1.5rem; padding-block: .5rem; }
 .dd-logo { display: inline-flex; flex-wrap: wrap; align-items: baseline; column-gap: .6rem; align-content: center; min-height: var(--target-min); color: var(--text); text-decoration: none; font-family: var(--font-display); font-weight: 800; font-size: 1.25rem; line-height: 1.1; }
 .dd-logo .dd-mono { font-size: .78rem; font-weight: 400; letter-spacing: .06em; text-transform: uppercase; }
+/* Ticker (HANDOFF motion table; Creatives 2026-11-10): the one solid band. Motion is WAAPI in Ticker.tsx, not @keyframes. */
+.dd-ticker { display: flex; align-items: center; background: var(--highlight); color: var(--highlight-contrast); --focus-ring-color: var(--highlight-contrast); }
+.dd-ticker-clip { position: relative; flex: 1; display: flex; min-width: 0; overflow: hidden; }
+.dd-ticker-track { display: flex; flex: none; white-space: nowrap; padding-block: .75rem; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; letter-spacing: -.01em; will-change: transform; }
+.dd-ticker-track span { padding-right: 3rem; }
+.dd-tickbtn { flex: none; display: inline-flex; align-items: center; min-height: var(--target-min); min-width: var(--target-min); margin: .35rem .6rem; padding: 0 1rem; border: var(--border-width) solid var(--highlight-contrast); border-radius: var(--radius-md); background: transparent; color: var(--highlight-contrast); font-family: var(--font-body); font-weight: 600; font-size: .85rem; cursor: pointer; }
 
 /* Prototype note */
 .dd-pnote p { margin: 1.6rem 0 0; padding: .2rem 0 .2rem .8rem; border-left: var(--border-width-strong) solid var(--border); }

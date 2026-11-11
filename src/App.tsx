@@ -4,6 +4,7 @@ import { FailuresBanner, recentFailures } from './AlertBanner';
 import { RunDialog } from './RunDialog';
 import { RunsTable, HEADER_LABELS } from './RunsTable';
 import { ShortcutsDialog } from './ShortcutsDialog';
+import { Ticker } from './Ticker';
 import { ariaFor, moveRow, useShortcutSetting, useShortcuts, type ShortcutActions } from './lib/shortcuts';
 import { closeRun, openRun, useRoute } from './lib/route';
 import { useMode } from './lib/mode';
@@ -75,12 +76,15 @@ function useFilters(): [Filters, (patch: Partial<Filters>) => void] {
 function Header() {
   const [mode, toggle] = useMode();
   return (
+    <>
     <header className="dd-top">
       <div className="dd-wrap dd-bar">
         <a className="dd-logo" href="#/">Dev dashboard <span className="dd-mono dd-muted">Ember UI · kinetic</span></a>
         <Button variant="secondary" className="dd-mode" onClick={toggle}>{mode === 'dark' ? 'Light mode' : 'Dark mode'}</Button>
       </div>
     </header>
+    <Ticker />
+    </>
   );
 }
 

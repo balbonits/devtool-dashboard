@@ -3,7 +3,7 @@
 Based on VPAT® 2.5 Rev 508 edition (Section 508). **Self-assessed** by the builder (Front End Developer bot for John Dilig). It isn't a third-party audit.
 
 - **Product:** Deploys dashboard prototype, a UX case study with fictional data, at https://jdilig.me/ux/dev-dashboard/
-- **Version:** repo `main`; the deployed copy names its exact commit in `BUILD.json` (see [PROGRESS.md](../PROGRESS.md))
+- **Version:** [`v0.1.0`](https://github.com/balbonits/devtool-dashboard/releases/tag/v0.1.0), commit [`5f8c90c2f94b5bc9c32ed23b8aa1efd73213bfce`](https://github.com/balbonits/devtool-dashboard/commit/5f8c90c2f94b5bc9c32ed23b8aa1efd73213bfce), the build live at jdilig.me (its [`BUILD.json`](https://jdilig.me/ux/dev-dashboard/BUILD.json) names the same commit)
 - **Report date:** 2026-11-10
 - **Contact:** https://github.com/balbonits/devtool-dashboard/issues
 - **Standards:** Revised Section 508 (36 CFR 1194), which incorporates WCAG 2.0 A/AA. This report also covers WCAG 2.1 and 2.2 A/AA.

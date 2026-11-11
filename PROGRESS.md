@@ -84,3 +84,18 @@ Log drawer, alert banner, run links with title/focus/scroll handling (R-5), keyb
 - QA nit fixed: shortcuts now ignore every editable element, `contenteditable="plaintext-only"` included (new unit test).
 - Tracked follow-up (EMBER-030): the PR that adopts Ember v0.3.0 removes the `var(--border-width, 1px)` and `var(--target-min, 44px)` fallbacks and checks the now-rounded corners.
 - At release, the ACR Version line names the deployed commit SHA.
+
+## 2026-11-10: Design: kinetic identity (UX/UI Designer)
+Kinetic (Kinetic Swiss) is this app's v3 identity on Ember UI, designed in balbonits/a11y-design-system. Times are merge times in PT, from GitHub.
+- 5:29 PM PT: direction D kinetic lands on main, with the prototype, tokens, TOKENS.md, CONTRAST.md, screenshots at 375 and 1280, a first HANDOFF.md and the shared v3 tooling ([PR #9](https://github.com/balbonits/a11y-design-system/pull/9), `dd99b4b`).
+- 5:59 PM PT: HANDOFF rewritten in the neo format, with annotated screenshots ([PR #14](https://github.com/balbonits/a11y-design-system/pull/14), `96b1fe2`).
+- 6:01 and 6:08 PM PT: Chief of Creatives' scope rulings recorded in the HANDOFF ([PR #18](https://github.com/balbonits/a11y-design-system/pull/18), `983ec14`), then kept in the HANDOFF source ([PR #19](https://github.com/balbonits/a11y-design-system/pull/19), `202b5da`).
+- 6:36 PM PT: rework into the dev dashboard Deploys page, with the "App: dev dashboard" block for Front End Developer and Addendum 7's `--scrim` and `--radius-xl` ([PR #20](https://github.com/balbonits/a11y-design-system/pull/20), `938e642`).
+- Chief Architect signed kinetic at `938e642`, and Visual QA passed it at the same sha.
+- 6:48 PM PT: Known issue 6 RULED by Chief Architect: the log drawer is a modal dialog at every width ([PR #22](https://github.com/balbonits/a11y-design-system/pull/22), `eec5773`).
+- 7:24 PM PT: v3 README entry page for all three directions ([PR #28](https://github.com/balbonits/a11y-design-system/pull/28), `1835b93`).
+- Live prototype: [kinetic Deploys page](https://raw.githack.com/balbonits/a11y-design-system/main/docs/directions/v3/kinetic/index.html). Spec: [kinetic HANDOFF](https://github.com/balbonits/a11y-design-system/blob/main/docs/directions/v3/kinetic/HANDOFF.md).
+- Next: the app build, by Front End Developer on `feat/kinetic-theme`, after Ember v0.3.1 (planned, not released).
+
+![Kinetic Deploys page at 375px, light, annotated](https://raw.githubusercontent.com/balbonits/a11y-design-system/748d492/docs/directions/v3/kinetic/handoff/kinetic-dashboard-375-light-annotated.png)
+![Kinetic Deploys page at 1440px, dark, annotated](https://raw.githubusercontent.com/balbonits/a11y-design-system/748d492/docs/directions/v3/kinetic/handoff/kinetic-dashboard-1440-dark-annotated.png)

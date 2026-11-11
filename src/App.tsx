@@ -5,7 +5,7 @@ import { RunDrawer } from './RunDrawer';
 import { ShortcutsDialog } from './ShortcutsDialog';
 import { ariaFor, moveRow, useShortcutSetting, useShortcuts, type ShortcutActions } from './lib/shortcuts';
 import { closeRun, openRun, useRoute, useWide } from './lib/route';
-import { SkeletonRows, StatusBadge } from './components';
+import { LoadingTable, StatusBadge } from './components';
 import { allGreen, makeRuns } from './lib/data';
 import { DEFAULT_FILTERS, applyFilters, hasFilters, readFilters, services, writeFilters, type Filters } from './lib/filters';
 import { ago, duration } from './lib/format';
@@ -188,7 +188,7 @@ function EnvPanel({ load, filters, setFilters }: { load: Load; filters: Filters;
         <Input label="Branch" value={filters.branch} onChange={(e) => setFilters({ branch: e.target.value })} />
         <Button variant="ghost" onClick={clear} disabled={!hasFilters(filters)}>Clear filters</Button>
       </div>
-      {load.kind === 'loading' && <SkeletonRows />}
+      {load.kind === 'loading' && <LoadingTable caption={`${envLabel} runs`} headers={columns.map((c) => String(c.header))} />}
       {load.kind === 'error' && <p className="dd-muted">No runs to show until deploys load.</p>}
       {load.kind === 'ready' && (
         <>

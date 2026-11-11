@@ -48,9 +48,23 @@ describe('dashboard', () => {
     expect(screen.getByText(/All deploys healthy in Production\./)).toBeInTheDocument();
   });
 
-  it('shows skeleton rows while loading', () => {
-    render(<App demo="loading" />);
-    expect(screen.getByText('Loading deploys')).toBeInTheDocument();
-    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+  it('keeps the table in place while loading (DASH-SPEC line 31)', () => {
+    const { container } = render(<App demo="loading" />);
+    const table = screen.getByRole('table', { name: 'Production runs' });
+    expect(table).toHaveAttribute('aria-busy', 'true');
+    const skel = container.querySelectorAll('tbody tr');
+    expect(skel.length).toBeGreaterThan(0);
+    skel.forEach((tr) => expect(tr).toHaveAttribute('aria-hidden', 'true'));
+    // The empty Ember toast region is also role=status; it stays silent, so leave it out.
+    const statuses = screen.getAllByRole('status').filter((el) => !el.classList.contains('em-toast-region'));
+    expect(statuses).toHaveLength(1);
+    expect(statuses[0]).toHaveTextContent('Loading runs');
+    expect(container.querySelector('[aria-busy]')).toBe(table);
+  });
+
+  it('drops aria-busy once data lands', () => {
+    render(<App demo={null} runs={makeRuns()} />);
+    expect(screen.getByRole('table', { name: 'Production runs' })).not.toHaveAttribute('aria-busy');
+    expect(screen.queryByText('Loading runs')).not.toBeInTheDocument();
   });
 });

@@ -30,6 +30,8 @@ body { margin: 0; background: var(--color-bg); color: var(--text); font-family: 
 .dd-ticker-clip { position: relative; flex: 1; display: flex; min-width: 0; overflow: hidden; }
 .dd-ticker-track { display: flex; flex: none; white-space: nowrap; padding-block: .75rem; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; letter-spacing: -.01em; will-change: transform; }
 .dd-ticker-track span { padding-right: 3rem; }
+.dd-ticker-clip[hidden] { display: none; }
+.dd-ticker-static { flex: 1; min-width: 0; margin: 0; padding-block: .75rem; font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; letter-spacing: -.01em; overflow-wrap: anywhere; }
 .dd-tickbtn { flex: none; display: inline-flex; align-items: center; min-height: var(--target-min); min-width: var(--target-min); margin: .35rem .6rem; padding: 0 1rem; border: var(--border-width) solid var(--highlight-contrast); border-radius: var(--radius-md); background: transparent; color: var(--highlight-contrast); font-family: var(--font-body); font-weight: 600; font-size: .85rem; cursor: pointer; }
 
 /* Prototype note */

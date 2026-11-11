@@ -117,17 +117,32 @@ for (const [width, rm] of [[320, 'no-preference'], [375, 'reduce'], [1280, 'no-p
   const x = () => p.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector('.dd-ticker-track')).transform).m41);
   const moving = async () => { const a = await x(); await p.waitForTimeout(400); return a !== (await x()); };
   const btn = p.locator('.dd-ticker button');
-  const want = rm === 'reduce' ? 'Play ticker' : 'Pause ticker';
+  const want = rm === 'reduce' ? 'Play release notes' : 'Pause release notes';
   check((await btn.textContent()) === want && (await moving()) === (rm !== 'reduce'), `${label}: starts ${rm === 'reduce' ? 'paused' : 'moving'} with "${want}"`);
   const bb = await btn.boundingBox();
   check(bb.width >= 44 && bb.height >= 44, `${label}: button is ${Math.round(bb.width)}x${Math.round(bb.height)}`);
+  // CA 2026-11-10: paused, the full text shows as static wrapping text (nothing clipped), and screen readers
+  // get the notes exactly once in either state.
+  const once = async () => ((await p.locator('.dd-ticker').ariaSnapshot()).match(/Accessible by default/g) || []).length === 1;
+  const pausedOk = async () => {
+    const r = await p.evaluate(() => {
+      const t = document.querySelector('.dd-ticker'), st = t.querySelector('.dd-ticker-static');
+      const box = st && st.getBoundingClientRect();
+      return { state: t.dataset.state, clipShown: !!t.querySelector('.dd-ticker-clip').getClientRects().length,
+        text: st?.textContent, visible: !!box && box.width > 0 && box.height > 0,
+        clip: st ? Math.max(st.scrollWidth - st.clientWidth, st.scrollHeight - st.clientHeight, t.scrollWidth - t.clientWidth) : -1 };
+    });
+    return r.state === 'paused' && !r.clipShown && r.visible && r.clip <= 0 && /^Accessible by default\. .*Mobile first\.$/.test(r.text || '') && (await once());
+  };
+  if (rm === 'reduce') check(await pausedOk(), `${label}: starts paused with every note visible as static text, 0 clip, read once`);
+  else check(await once(), `${label}: playing, the notes are read once (sentence version; moving copy aria-hidden)`);
   const names = await p.evaluate(() => { const t = document.querySelector('.dd-ticker'); return { hidden: t.querySelector('.dd-ticker-track').getAttribute('aria-hidden'), sr: t.querySelector('.sr-only')?.textContent, kf: document.querySelector('.dd-ticker-track').getAnimations().length }; });
-  check(names.hidden === 'true' && /Accessible by default\. Keyboard first\./.test(names.sr || '') && names.kf === 1, `${label}: moving copy aria-hidden, sentence version for screen readers, one WAAPI animation`);
+  check(names.hidden === 'true' && (rm === 'reduce' ? names.sr === undefined : /Accessible by default\. Keyboard first\./.test(names.sr || '')) && names.kf === 1, `${label}: moving copy aria-hidden, sentence version for screen readers, one WAAPI animation`);
   const order = [];
   await p.keyboard.press('Tab');
   for (let i = 0; i < 4; i++) { await p.keyboard.press('Tab'); order.push(await p.evaluate(() => (document.activeElement.getAttribute('aria-label') || document.activeElement.textContent || '').trim())); }
   check(order[1] === 'Dark mode' || order[1] === 'Light mode', `${label}: mode toggle follows the logo`);
-  check(/ticker$/.test(order[2]) && order[3] === 'Keyboard shortcuts', `${label}: ticker button sits between the header controls and "Keyboard shortcuts" (${order.join(' > ')})`);
+  check(/release notes$/.test(order[2]) && order[3] === 'Keyboard shortcuts', `${label}: ticker button sits between the header controls and "Keyboard shortcuts" (${order.join(' > ')})`);
   if (rm === 'reduce') { await btn.click(); await p.mouse.move(5, 790); await p.locator('h1').focus(); await p.waitForTimeout(100); }
   check(await moving(), `${label}: moving after ${rm === 'reduce' ? 'Play' : 'load'}`);
   await btn.focus(); await p.waitForTimeout(100); // one React render
@@ -138,7 +153,8 @@ for (const [width, rm] of [[320, 'no-preference'], [375, 'reduce'], [1280, 'no-p
   await p.mouse.move(5, 790);
   check(await moving(), `${label}: moves again after hover and focus leave`);
   await btn.click(); await p.mouse.move(5, 790); await p.locator('h1').focus(); await p.waitForTimeout(100);
-  check((await btn.textContent()) === 'Play ticker' && !(await moving()), `${label}: "Pause ticker" stops it and becomes "Play ticker"`);
+  check((await btn.textContent()) === 'Play release notes' && !(await moving()), `${label}: "Pause release notes" stops it and becomes "Play release notes"`);
+  check(await pausedOk(), `${label}: after Pause, every note shows as static text with 0 clip, read once`);
   await p.context().close();
 }
 await browser.close();

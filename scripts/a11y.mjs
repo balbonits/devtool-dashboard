@@ -79,9 +79,10 @@ for (const width of [1440, 1024, 768, 640, 375, 320]) {
         const cs = getComputedStyle(el);
         if (el.closest('.sr-only, [hidden], dialog:not([open])') || !el.getClientRects().length) return false;
         const hides = (v) => v === 'hidden' || v === 'clip';
-        // The ticker band clips its marquee copy sideways by design (it scrolls through; screen readers get the sentence version).
-        // Only that sideways clip is exempt; the band must still grow to fit the spaced text vertically.
-        const marquee = el.matches('.dd-ticker-clip');
+        // While it plays, the ticker band clips its marquee copy sideways by design (it scrolls through; screen readers get
+        // the sentence version). Only that sideways clip, and only in the playing state, is exempt (CA 2026-11-10): paused,
+        // the band shows static wrapping text and is checked like everything else. It must always grow to fit vertically.
+        const marquee = el.matches('[data-state=playing] .dd-ticker-clip');
         return (!marquee && hides(cs.overflowX) && el.scrollWidth > el.clientWidth + 1) || (hides(cs.overflowY) && el.scrollHeight > el.clientHeight + 1);
       }).map((el) => `${el.tagName.toLowerCase()}.${el.className}`.slice(0, 50)),
     }));

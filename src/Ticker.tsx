@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 export const TICKER_TEXT = 'Accessible by default / Keyboard first / AA contrast in light and dark / Reduced motion respected / Mobile first /';
-const TICKER_SENTENCES = 'Accessible by default. Keyboard first. AA contrast in light and dark. Reduced motion respected. Mobile first.';
+export const TICKER_SENTENCES = 'Accessible by default. Keyboard first. AA contrast in light and dark. Reduced motion respected. Mobile first.';
 
 const reduceQuery = () => (typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null);
 
@@ -15,9 +15,13 @@ function tickerMs(el: Element) {
 
 /**
  * Release-note marquee (HANDOFF motion table, Creatives 2026-11-10).
- * Web Animations API, not @keyframes (token-lint). The moving copy is aria-hidden; screen readers get the sentence version.
- * WCAG 2.2.2: a visible "Pause ticker"/"Play ticker" button, starts paused under reduced motion, and it also holds still
- * while hovered or while focus is inside it.
+ * Web Animations API, not @keyframes (token-lint).
+ * WCAG 2.2.2: one visible toggle, "Pause release notes"/"Play release notes" (Creatives' labels, no aria-pressed).
+ * It starts paused under reduced motion, and also holds still while hovered or while focus is inside it.
+ * Playing: the moving copy is clipped sideways and aria-hidden; screen readers get the sentence version.
+ * Paused (Pause pressed or reduced motion): the marquee is swapped for every note as static text that wraps, so
+ * nothing is clipped for sighted users and the text is read once (CA 2026-11-10). A hover or focus hold stays
+ * clipped, since it resumes on its own.
  */
 export function Ticker() {
   const track = useRef<HTMLDivElement>(null);
@@ -54,18 +58,21 @@ export function Ticker() {
     <div
       className="dd-ticker"
       role="region"
-      aria-label="Release notes ticker"
+      aria-label="Release notes"
+      data-state={paused ? 'paused' : 'playing'}
       data-paused={paused || held ? '' : undefined}
       onPointerEnter={() => setHovered(true)}
       onPointerLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}
       onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocused(false); }}
     >
-      <div className="dd-ticker-clip">
+      {/* The track stays mounted while paused so Play resumes where it stopped. */}
+      <div className="dd-ticker-clip" hidden={paused}>
         <div className="dd-ticker-track" ref={track} aria-hidden="true"><span>{TICKER_TEXT}</span><span>{TICKER_TEXT}</span></div>
-        <span className="sr-only">{TICKER_SENTENCES}</span>
+        {!paused && <span className="sr-only">{TICKER_SENTENCES}</span>}
       </div>
-      <button type="button" className="dd-tickbtn" onClick={() => setPaused((p) => !p)}>{paused ? 'Play ticker' : 'Pause ticker'}</button>
+      {paused && <p className="dd-ticker-static">{TICKER_SENTENCES}</p>}
+      <button type="button" className="dd-tickbtn" onClick={() => setPaused((p) => !p)}>{paused ? 'Play release notes' : 'Pause release notes'}</button>
     </div>
   );
 }

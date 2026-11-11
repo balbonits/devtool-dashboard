@@ -1,13 +1,15 @@
 /* Styles are token-driven: colors, spacing, radii, borders and type come only from Ember UI tokens, so the dashboard theme (Creatives) can drop in later.
-   Shape properties (border-radius, border widths, box-shadow, outline) use only var(--…), 0 or none; the var fallbacks cover tokens Ember v0.2.2 does not ship yet.
-   Focus rings come from Ember (.em-focus). Literal 44px is the touch-target minimum. scripts/token-lint.mjs enforces all of this in CI. */
+   Shape properties (border-radius, border widths, box-shadow, outline) use only var(--…), 0 or none; only the locked R-2 names (ARCH-REVIEW Addendum 5).
+   Ember v0.2.2 doesn't define --radius-sm/md/lg, --border-width or --target-min yet: radii render square until v0.3.0,
+   and --border-width and --target-min keep a fallback so borders and 44px targets hold meanwhile.
+   Focus rings come from Ember (.em-focus). scripts/token-lint.mjs enforces all of this in CI. */
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 body { margin: 0; background: var(--color-bg); }
 .dd-app { min-height: 100vh; display: flex; flex-direction: column; }
-.dd-skip { position: absolute; left: var(--space-2); top: calc(-1 * var(--space-16)); background: var(--surface); color: var(--text); padding: var(--space-2) var(--space-3); border-radius: var(--radius); z-index: 10; display: inline-flex; align-items: center; min-height: 44px; }
+.dd-skip { position: absolute; left: var(--space-2); top: calc(-1 * var(--space-16)); background: var(--surface); color: var(--text); padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); z-index: 10; display: inline-flex; align-items: center; min-height: var(--target-min, 44px); }
 .dd-skip:focus { top: var(--space-2); }
 .dd-demo-note { margin: 0; padding: var(--space-2) var(--space-4); font-size: var(--text-sm); background: var(--surface-muted); color: var(--text); }
-.dd-demo-note a { color: var(--text); display: inline-flex; align-items: center; min-height: 44px; }
+.dd-demo-note a { color: var(--text); display: inline-flex; align-items: center; min-height: var(--target-min, 44px); }
 .dd-main { flex: 1; width: 100%; max-width: 1440px; margin: 0 auto; padding: var(--space-4); outline: 0; }
 .dd-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-3); margin-bottom: var(--space-3); }
 .dd-head h1 { margin: 0; font-size: var(--text-2xl); }
@@ -15,8 +17,8 @@ body { margin: 0; background: var(--color-bg); }
 .dd-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-3); align-items: end; margin-bottom: var(--space-3); }
 .dd-count { margin: 0 0 var(--space-2); font-size: var(--text-sm); color: var(--text-muted); }
 .dd-muted { color: var(--text-muted); font-size: var(--text-sm); }
-.dd-calm { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-3); padding: var(--space-3) var(--space-4); border: var(--border-width, 1px) solid var(--border-subtle); border-radius: var(--radius); background: var(--surface); }
-.dd-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin: 0 0 var(--space-3); padding: var(--space-3) var(--space-4); border: var(--border-width, 1px) solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.dd-calm { display: flex; align-items: center; gap: var(--space-2); margin: 0 0 var(--space-3); padding: var(--space-3) var(--space-4); border: var(--border-width, 1px) solid var(--border-subtle); border-radius: var(--radius-md); background: var(--surface); }
+.dd-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-3); margin: 0 0 var(--space-3); padding: var(--space-3) var(--space-4); border: var(--border-width, 1px) solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
 .dd-banner p { margin: 0; font-weight: var(--weight-medium); }
 .dd-banner--error { border-color: var(--danger); }
 .dd-status { display: inline-flex; align-items: center; gap: var(--space-1); font-weight: var(--weight-medium); }
@@ -29,9 +31,8 @@ body { margin: 0; background: var(--color-bg); }
 .dd-msg { color: var(--text-muted); }
 .dd-empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--space-2); padding: var(--space-4) 0; white-space: normal; }
 .dd-empty p { margin: 0; }
-.dd-skeleton { display: flex; flex-direction: column; gap: var(--space-2); }
-.dd-skel-row { display: grid; grid-template-columns: 1fr 2fr 1fr; gap: var(--space-3); padding: var(--space-3); border: var(--border-width, 1px) solid var(--border-subtle); border-radius: var(--radius); background: var(--surface); }
+.dd-skel-row td { padding-block: var(--space-3); }
 .dd-skel-line { display: block; height: var(--space-3); border-radius: var(--radius-full); background: var(--surface-muted); }
 .dd-footer { padding: var(--space-4); border-top: var(--border-width, 1px) solid var(--border-subtle); font-size: var(--text-xs); color: var(--text-muted); }
-.dd-footer a { color: var(--text); display: inline-flex; align-items: center; min-height: 44px; }
+.dd-footer a { color: var(--text); display: inline-flex; align-items: center; min-height: var(--target-min, 44px); }
 .em-tablist { overflow-x: auto; }

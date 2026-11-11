@@ -30,3 +30,9 @@ More: [failed filter](docs/screenshots/2026-11-10-prototype-failed-filter.png), 
 
 ## Not done yet
 Log drawer, alert banner, run links with title/focus/scroll handling (R-5), keyboard shortcuts and their off switch (R-7), ACR, keyboard and screen-reader pass, secret scan, BUILD.json and the jdilig.me case study.
+
+## 2026-11-10 ~7:00 PM PT: review fixes (QA FAIL on 6a2cc73)
+- Shape tokens now use only the locked R-2 names: `--radius-sm` (skip link) and `--radius-md` (calm note, banner). Ember v0.2.2 doesn't ship those yet, so corners stay square until v0.3.0. `--border-width` and `--target-min` keep a fallback until then.
+- Loading now matches DASH-SPEC line 31: the table is in place with `aria-busy="true"`, its skeleton rows are `aria-hidden`, one polite status says "Loading runs", and nothing animates. The real table replaces it when data lands.
+- token-lint also fails on retired token names (exact match, so `--focus-ring-color` still passes), with tests that plant each one.
+- Checks: 28 unit tests, token-lint clean, axe 80 runs with 0 failing.

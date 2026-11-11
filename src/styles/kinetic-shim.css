@@ -38,9 +38,9 @@
   --palette-crimson-200: #FFB3C0;
 }
 [data-theme="kinetic"] {
-  --font-display: 'Bricolage Grotesque', 'Arial Narrow', system-ui, sans-serif;
-  --font-body: 'Instrument Sans', system-ui, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-display: 'Bricolage Grotesque', 'Bricolage Grotesque Fallback', 'Arial Narrow', system-ui, sans-serif;
+  --font-body: 'Instrument Sans', 'Instrument Sans Fallback', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'IBM Plex Mono Fallback', ui-monospace, monospace;
   --weight-display: 700;
   --weight-display-min: 300;
   --weight-display-max: 800;

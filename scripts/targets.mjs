@@ -1,10 +1,18 @@
 // Shared target-size measuring (WCAG 2.5.8; project --target-min 44px) for scripts/target-audit.mjs and scripts/e2e.mjs.
 // A control's target is its own box plus any absolutely positioned ::before that extends it (Ember's sort headers and
 // small buttons), or, for an Ember checkbox, the whole .em-check row that its label's ::before covers. Each target is
-// hit-tested with elementFromPoint at its centre and corners, so a pseudo-element that is covered or clipped fails.
+// clipped to the padding box of every ancestor that clips overflow (Ember's overflow:auto tablist), then hit-tested with
+// elementFromPoint at its centre and next to the middle of each edge, so a covered target fails.
 // Inline links inside a sentence are exempt (2.5.8); a link counts as inline when the text right next to it has letters.
 
 export const MIN = 44;
+
+/** Known gaps the guard allows, narrowly: each must measure exactly `height` px tall (so it fails if it gets worse, and
+ *  fails once it is fixed, so the entry can't go stale). Remove with DASH-EMBER-BUMP. */
+export const KNOWN_GAPS = [
+  { id: 'em-tab', selector: '.em-tab', height: 43,
+    why: "Ember v0.2.2 .em-tab has margin-bottom:-1px over the .em-tablist border, and the tablist's overflow:auto clips it to 43px; fixed upstream in Ember's HIT-PATCH (a11y-design-system #36)" },
+];
 
 /** Page states to open, as [name, path, open(page) | null, scope selector]. */
 export const STATES = [
@@ -17,7 +25,7 @@ export const STATES = [
 ];
 
 /** Runs in the page. Returns one entry per standalone control inside `scope`. */
-export function measure({ scope, min }) {
+export function measure({ scope, min, gaps = [] }) {
   const roots = [...document.querySelectorAll(scope)];
   const inPage = scope === 'body';
   const name = (el) => (el.getAttribute('aria-label') || el.labels?.[0]?.textContent || el.textContent || el.getAttribute('placeholder') || '')
@@ -64,8 +72,12 @@ export function measure({ scope, min }) {
     const box = el.getBoundingClientRect();
     const a = clip(el, area(el));
     const w = a.r - a.l, h = a.b - a.t;
-    // Hit-test centre and the four corners (1px in) of the target that are on screen.
-    const pts = [[(a.l + a.r) / 2, (a.t + a.b) / 2], [a.l + 1, a.t + 1], [a.r - 1, a.t + 1], [a.l + 1, a.b - 1], [a.r - 1, a.b - 1]]
+    // Hit-test the centre and the outermost pixel (its centre, 0.5px in) at the middle of each edge, for points on
+    // screen. Edge midpoints, not corners, because hit testing follows border-radius.
+    // The exact edges come from geometry above (clip()); hit points sit in the second whole pixel in from each edge,
+    // because Chrome snaps inline boxes' hit areas to pixels (a link whose rect ends at 176.2 stops hitting at 175.2).
+    const cx = (a.l + a.r) / 2, cy = (a.t + a.b) / 2;
+    const pts = [[cx, cy], [cx, Math.ceil(a.t) + 1.5], [cx, Math.floor(a.b) - 1.5], [Math.ceil(a.l) + 1.5, cy], [Math.floor(a.r) - 1.5, cy]]
       .filter(([x, y]) => x >= 0 && y >= 0 && x < innerWidth && y < innerHeight);
     const missed = pts.filter(([x, y]) => !owns(el, document.elementFromPoint(x, y))).length;
     const underModal = !!modal && !modal.contains(el);
@@ -79,6 +91,7 @@ export function measure({ scope, min }) {
       ok: inline(el) || (Math.round(w) >= min && Math.round(h) >= min && missed === 0),
       missed,
       underModal,
+      gap: (gaps.find((g) => el.matches(g.selector)) || {}).id || '',
     });
   }
   return out;
@@ -91,7 +104,7 @@ export async function measureState(browser, base, width, [, path, open, scope], 
   await p.goto(base + path, { waitUntil: 'networkidle' });
   await p.waitForTimeout(300);
   if (open) await open(p);
-  const r = await p.evaluate(measure, { scope, min: MIN });
+  const r = await p.evaluate(measure, { scope, min: MIN, gaps: KNOWN_GAPS.map(({ id, selector }) => ({ id, selector })) });
   await ctx.close();
   return r;
 }

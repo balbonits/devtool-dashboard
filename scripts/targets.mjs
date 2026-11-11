@@ -42,6 +42,16 @@ export function measure({ scope, min }) {
     if (p.b - p.t < minH) p.b = p.t + minH;
     return { l: Math.min(b.l, p.l), t: Math.min(b.t, p.t), r: Math.max(b.r, p.r), b: Math.max(b.b, p.b), via: '::before' };
   };
+  // Clip the target to every ancestor that clips overflow (its padding box), e.g. Ember's overflow:auto tablist.
+  const clip = (el, a) => {
+    for (let n = el.parentElement; n && n !== document.documentElement; n = n.parentElement) {
+      const c = getComputedStyle(n);
+      if (c.overflowX === 'visible' && c.overflowY === 'visible') continue;
+      const r = n.getBoundingClientRect(), bw = (k) => parseFloat(c[`border${k}Width`]) || 0;
+      a = { ...a, l: Math.max(a.l, r.left + bw('Left')), t: Math.max(a.t, r.top + bw('Top')), r: Math.min(a.r, r.right - bw('Right')), b: Math.min(a.b, r.bottom - bw('Bottom')) };
+    }
+    return a;
+  };
   const modal = document.querySelector('dialog:modal');
   const owns = (el, hit) => !!hit && (hit === el || el.contains(hit) || hit.closest('label')?.control === el
     || (el.closest('.em-check') && el.closest('.em-check').contains(hit)));
@@ -52,7 +62,7 @@ export function measure({ scope, min }) {
     if (el.closest('[aria-hidden=true]')) continue;
     el.scrollIntoView({ block: 'center', inline: 'center' });
     const box = el.getBoundingClientRect();
-    const a = area(el);
+    const a = clip(el, area(el));
     const w = a.r - a.l, h = a.b - a.t;
     // Hit-test centre and the four corners (1px in) of the target that are on screen.
     const pts = [[(a.l + a.r) / 2, (a.t + a.b) / 2], [a.l + 1, a.t + 1], [a.r - 1, a.t + 1], [a.l + 1, a.b - 1], [a.r - 1, a.b - 1]]

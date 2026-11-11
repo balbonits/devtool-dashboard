@@ -3,6 +3,7 @@
 import { chromium } from 'playwright-core';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { STATES, MIN, KNOWN_GAPS, appliesAt, measureState } from './targets.mjs';
 
 const axe = readFileSync(createRequire(import.meta.url).resolve('axe-core/axe.min.js'), 'utf8');
 
@@ -176,6 +177,31 @@ for (const [label, width, colorScheme, fail] of cases) {
   }
   await ctx.close();
 }
+// DASH-TARGETS (WCAG 2.5.8, --target-min): every standalone control in every state has a target of at least 44x44 at
+// 320 and 1280, counting a ::before that extends it, and that whole target is hit-testable. Inline links in a sentence
+// are exempt. The toast state runs at 1024px+ only: below the drawer breakpoint the run log is a modal dialog and Copy
+// link confirms inside it (DASH-MODAL-TOAST, checked above), so no toast sits behind the modal. Known gap: Ember v0.2.2 tabs are 43px effective (see KNOWN_GAPS in targets.mjs, a11y #36).
+for (const width of [320, 1280]) for (const state of STATES) {
+  if (!appliesAt(state, width)) continue;
+  const found = await measureState(browser, base, width, state, { permissions: ['clipboard-read', 'clipboard-write'] });
+  check(found.length > 0, `targets ${width} ${state[0]}: found ${found.length} controls`);
+  for (const m of found) {
+    if (m.inline) continue;
+    const [w, h] = m.target.split('x').map(Number);
+    const sized = w >= MIN && h >= MIN;
+    if (m.underModal) { check(sized, `targets ${width} ${state[0]}: ${m.control} target ${m.target} (behind the modal dialog: known issue, size only)`); continue; }
+    const gap = KNOWN_GAPS.find((g) => g.id === m.gap);
+    if (gap) {
+      // Narrow allowlist (fixed upstream in a11y-design-system #36, to be removed when the dashboard moves to Ember v0.3, DASH-EMBER-V03): at least gap.floor tall but under 44, full width, all hit points
+      // land. Below the floor fails; 44+ also fails, because it's fixed and the entry must go.
+      check(w >= MIN && h >= gap.floor && h < MIN && !m.missed, `targets ${width} ${state[0]}: ${m.control} target ${m.target} is the known ${gap.floor}px gap (${gap.id}, a11y-design-system #36)${h >= MIN ? '; it now reaches 44, so remove this KNOWN_GAPS entry (DASH-EMBER-V03)' : h < gap.floor ? `; below the ${gap.floor}px floor` : ''}`);
+      continue;
+    }
+    if (!sized || m.missed) check(false, `targets ${width} ${state[0]}: ${m.control} box ${m.box}, target ${m.target}${m.missed ? `, ${m.missed} of 5 hit points miss` : ''}`);
+  }
+  if (found.every((m) => m.inline || m.underModal || m.gap || m.ok)) check(true, `targets ${width} ${state[0]}: every standalone control is 44x44+ and hit-testable`);
+}
+
 await browser.close();
 console.log(failed ? `${failed} e2e checks failed` : 'e2e: all checks passed');
 process.exit(failed ? 1 : 0);

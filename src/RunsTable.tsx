@@ -6,7 +6,7 @@ import { ariaFor } from './lib/shortcuts';
 import type { Run, Status } from './lib/types';
 
 /**
- * Runs table (HANDOFF H-2, H-4). Our own markup rather than Ember v0.2.2's Table, which can't take a visually hidden
+ * Runs table (HANDOFF H-2, H-4). Our own markup rather than Ember's Table (checked at v0.2.2), which can't take a visually hidden
  * "Actions" header or a custom sort order (reported to FSD for v0.3.x). Every data header is a <button> in the th,
  * the sorted th carries aria-sort plus an arrow glyph, and the table scrolls sideways inside its own focusable region.
  */

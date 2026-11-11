@@ -1,6 +1,6 @@
 # Self-hosted fonts (KINETIC-PREP, CTE 2026-11-10)
 
-Ember v0.3.1 ships no fonts, so devtool-dashboard self-hosts them. No npm package, no runtime CDN.
+Ember (pinned main `2d59d7b`) ships no fonts, so devtool-dashboard self-hosts them. No npm package, no runtime CDN.
 
 Source: [google/fonts](https://github.com/google/fonts) at commit `5bb28733cec313b63fbd415b574b5ae35c8aa8b8`.
 

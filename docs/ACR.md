@@ -62,7 +62,7 @@ WCAG 2.0 A/AA rows are the Section 508 baseline. Rows marked 2.1 or 2.2 are extr
 | 2.5.3 Label in Name (2.1) | A | Supports | Accessible names contain the visible label ("Log" in "Open log for ..."). |
 | 2.5.4 Motion Actuation (2.1) | A | Not Applicable | No motion input. |
 | 2.5.7 Dragging Movements (2.2) | AA | Not Applicable | No dragging. |
-| 2.5.8 Target Size (Minimum) (2.2) | AA | Supports | All targets meet WCAG 2.5.8 (24px). The project aims for 44px; the environment tabs are 43px effective due to an Ember v0.2.2 tablist clip, fixed upstream in a11y-design-system #36, to be removed when the dashboard moves to Ember v0.3. |
+| 2.5.8 Target Size (Minimum) (2.2) | AA | Supports | All targets meet WCAG 2.5.8 (24px), and every standalone control meets the project's 44px goal. |
 | 3.1.1 Language of Page | A | Supports | `lang="en"`. |
 | 3.1.2 Language of Parts | AA | Not Applicable | No other-language passages. |
 | 3.2.1 On Focus | A | Supports | Focus causes no context change. |
@@ -88,7 +88,7 @@ WCAG 2.0 A/AA rows are the Section 508 baseline. Rows marked 2.1 or 2.2 are extr
 | 302.4 Without Hearing | Not Applicable | No audio. |
 | 302.5 With Limited Hearing | Not Applicable | No audio. |
 | 302.6 Without Speech | Not Applicable | No speech input. |
-| 302.7 With Limited Manipulation | Supports | Fully keyboard operable, targets aim for 44px and all meet WCAG 2.5.8 (24px), no drag or timing; shortcuts can be turned off. |
+| 302.7 With Limited Manipulation | Supports | Fully keyboard operable, every standalone control is 44px or larger and all targets meet WCAG 2.5.8 (24px), no drag or timing; shortcuts can be turned off. |
 | 302.8 With Limited Reach and Strength | Supports | Same as 302.7. |
 | 302.9 With Limited Language, Cognitive, and Learning Abilities | Supports | Plain labels, a calm all-green state, clear empty and error states with one next step each. |
 

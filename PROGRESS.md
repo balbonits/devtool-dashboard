@@ -99,3 +99,12 @@ Kinetic (Kinetic Swiss) is this app's v3 identity on Ember UI, designed in balbo
 
 ![Kinetic Deploys page at 375px, light, annotated](https://raw.githubusercontent.com/balbonits/a11y-design-system/748d492/docs/directions/v3/kinetic/handoff/kinetic-dashboard-375-light-annotated.png)
 ![Kinetic Deploys page at 1440px, dark, annotated](https://raw.githubusercontent.com/balbonits/a11y-design-system/748d492/docs/directions/v3/kinetic/handoff/kinetic-dashboard-1440-dark-annotated.png)
+
+## 2026-11-11: Kinetic on Ember main (Front End Developer, PR #5)
+- `ember-ui` is pinned to Ember main `2d59d7b9d00b636f3a2bf88bbcebebb5382f43b9` (v0.3.1 content, no tag): kinetic registered, HIT-PATCH #36, and the toast modal outlet #51. `src/styles/kinetic-shim.css` is deleted; every token comes from Ember's kinetic theme.
+- Merged devtool-dashboard main (`1d862be`) in. The run log is a modal dialog at every width (RunDrawer is folded into RunDialog), and Copy link reports through an in-dialog status line, per Chief Architect's #9 ruling, instead of a toast.
+- Buttons use Ember's kinetic hover (inverted fill) and press offset; the local overrides are gone. The `.em-tab` KNOWN_GAPS entry and the `.em-btn--sm::before` override are removed (DASH-EMBER-V03 folded in), and ACR 2.5.8 now reads "every standalone control meets the project's 44px goal".
+- The metric-matched fallback font faces are dropped, because Ember's kinetic stacks don't name them. Flagged in the PR as a possible font-swap layout shift question.
+- New `scripts/kinetic-contrast.mjs`: 21 text and UI pairs in light and dark from Ember's built CSS, 42 checks, 0 under their threshold.
+- Gates: lint 0, typecheck, vitest 49/49, build, e2e 219/0 (targets 44px+ at 320 and 1280 in every state), a11y 416 checks / 0 failing (axe 208 runs, 200% zoom 130, text spacing 78).
+- Before (main on v0.2.2) and after side-by-sides are in `docs/shots/kinetic/`.

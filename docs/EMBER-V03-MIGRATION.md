@@ -1,9 +1,10 @@
 # Ember v0.3 migration note
 
-Status: planning note only. Nothing here changes the app. The dashboard stays on Ember UI v0.2.2
-(`github:balbonits/a11y-design-system#v0.2.2`) with two local patches and one allowlisted gap, until the
-dashboard's kinetic theme is in Ember main and the app pins that commit (see "Update: the dashboard's v0.3 identity
-is kinetic" below; decided by Chief of Technology & Engineering, 2026-11-10).
+Status (2026-11-11): done on `feat/kinetic-theme` (PR #5). The dashboard pins Ember main
+`2d59d7b9d00b636f3a2bf88bbcebebb5382f43b9` (v0.3.1 content: kinetic registered, HIT-PATCH #36, toast modal
+outlet #51), the kinetic shim is gone, the `.em-tab` KNOWN_GAPS entry and the `.em-btn--sm::before` override are
+removed, and ACR 2.5.8 has its final wording. The planning text below is kept as the record of how we got here
+(decided by Chief of Technology & Engineering, 2026-11-10).
 
 ## Why we can't just bump
 

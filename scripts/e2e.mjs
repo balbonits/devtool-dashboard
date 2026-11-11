@@ -3,6 +3,7 @@
 import { chromium } from 'playwright-core';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { STATES, MIN, measureState } from './targets.mjs';
 
 const axe = readFileSync(createRequire(import.meta.url).resolve('axe-core/axe.min.js'), 'utf8');
 
@@ -106,6 +107,24 @@ for (const [label, width] of [['desktop', 1280], ['mobile', 375]]) {
   check(!(await p.getByRole('checkbox', { name: /Single-key shortcuts/ }).isChecked()), `${label}: header button still opens the dialog, setting kept`);
   await p.context().close();
 }
+// DASH-TARGETS (WCAG 2.5.8, --target-min): every standalone control in every state has a target of at least 44x44 at
+// 320 and 1280, counting a ::before that extends it, and that whole target is hit-testable. Inline links in a sentence
+// are exempt. Known issue (reported to CTE 2026-11-10, not fixed here): below the drawer breakpoint the run log is a
+// modal dialog and Ember's toast renders behind it, so its Dismiss button is sized right but covered; that case checks
+// size only and is logged.
+for (const width of [320, 1280]) for (const state of STATES) {
+  const found = await measureState(browser, base, width, state, { permissions: ['clipboard-read', 'clipboard-write'] });
+  check(found.length > 0, `targets ${width} ${state[0]}: found ${found.length} controls`);
+  for (const m of found) {
+    if (m.inline) continue;
+    const [w, h] = m.target.split('x').map(Number);
+    const sized = w >= MIN && h >= MIN;
+    if (m.underModal) { check(sized, `targets ${width} ${state[0]}: ${m.control} target ${m.target} (behind the modal dialog: known issue, size only)`); continue; }
+    if (!sized || m.missed) check(false, `targets ${width} ${state[0]}: ${m.control} box ${m.box}, target ${m.target}${m.missed ? `, ${m.missed} of 5 hit points miss` : ''}`);
+  }
+  if (found.every((m) => m.inline || m.underModal || m.ok)) check(true, `targets ${width} ${state[0]}: every standalone control is 44x44+ and hit-testable`);
+}
+
 await browser.close();
 console.log(failed ? `${failed} e2e checks failed` : 'e2e: all checks passed');
 process.exit(failed ? 1 : 0);

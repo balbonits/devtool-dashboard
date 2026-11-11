@@ -63,6 +63,10 @@ body { margin: 0; background: var(--color-bg); }
 /* Ember v0.2.2 gap: a long modal title squeezes the close button below 44px at 320px. Reported to the Ember owner. */
 .em-modal-head > .em-btn { flex: none; }
 .em-modal-title { min-width: 0; overflow-wrap: anywhere; }
+/* Ember v0.2.2 gap (DASH-TARGETS): small buttons such as the toast's Dismiss widen their hit area with a ::before inset
+   by -4px, but it starts inside the 1px border, so a 36px icon button gets a 42x42 target. Grow the inset to reach
+   --target-min (never less than Ember's -4px). Hit area only; nothing visible changes. */
+.ember .em-btn--sm::before { inset: min(-4px, calc((100% - var(--target-min, 44px)) / 2)); }
 
 /* Shortcuts dialog */
 .dd-keys { width: 100%; border-collapse: collapse; margin-top: var(--space-4); }

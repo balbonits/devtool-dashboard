@@ -34,7 +34,7 @@ export function useShortcutSetting(): [boolean, (on: boolean) => void] {
 export function shouldIgnore(e: KeyboardEvent): boolean {
   if (e.ctrlKey || e.altKey || e.metaKey || e.defaultPrevented || e.isComposing) return true;
   const t = e.target as HTMLElement | null;
-  if (t && (t.closest('input, select, textarea, [contenteditable=""], [contenteditable="true"]'))) return true;
+  if (t && (t.closest('input, select, textarea, [contenteditable]:not([contenteditable="false"])'))) return true;
   return !!document.querySelector('dialog[open]');
 }
 

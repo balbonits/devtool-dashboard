@@ -94,4 +94,17 @@ describe('keyboard shortcuts (R-7)', () => {
       expect(document.querySelector(`[aria-keyshortcuts~="${s.aria}"]`), s.key).toBeNull();
     }
   });
+
+  it('ignores keys typed in any editable element, plaintext-only included', async () => {
+    const user = userEvent.setup();
+    render(<App demo={null} runs={makeRuns()} />);
+    const ed = document.createElement('div');
+    ed.setAttribute('contenteditable', 'plaintext-only');
+    ed.tabIndex = 0;
+    document.body.append(ed);
+    ed.focus();
+    await user.keyboard('/');
+    expect(screen.getByLabelText('Search runs')).not.toHaveFocus();
+    ed.remove();
+  });
 });

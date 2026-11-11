@@ -78,3 +78,9 @@ Log drawer, alert banner, run links with title/focus/scroll handling (R-5), keyb
 - With single-key shortcuts off, no control advertises them in `aria-keyshortcuts` any more.
 - e2e waits for the mobile log dialog to finish closing before pressing `?`; that race had made one run in three fail.
 - Checks: 41 unit and component tests; token-lint clean; axe 110 runs and the text-spacing pass, 0 failing; e2e passed 3 runs in a row; Lighthouse on the list: accessibility, best practices and performance 100, layout shift 0.018.
+
+## 2026-11-10 6:30 PM PT: sign-offs and follow-ups
+- Chief Architect signed the ACR. At CA's request, 4.1.3 now says Partially Supports until a screen-reader pass, matching 302.1.
+- QA nit fixed: shortcuts now ignore every editable element, `contenteditable="plaintext-only"` included (new unit test).
+- Tracked follow-up (EMBER-030): the PR that adopts Ember v0.3.0 removes the `var(--border-width, 1px)` and `var(--target-min, 44px)` fallbacks and checks the now-rounded corners.
+- At release, the ACR Version line names the deployed commit SHA.

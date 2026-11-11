@@ -62,3 +62,9 @@ body { margin: 0; background: var(--color-bg); }
 /* Ember v0.2.2 gap: a long modal title squeezes the close button below 44px at 320px. Reported to the Ember owner. */
 .em-modal-head > .em-btn { flex: none; }
 .em-modal-title { min-width: 0; overflow-wrap: anywhere; }
+
+/* Shortcuts dialog */
+.dd-keys { width: 100%; border-collapse: collapse; margin-top: var(--space-4); }
+.dd-keys th, .dd-keys td { text-align: start; padding: var(--space-2) var(--space-3); border-block-end: var(--border-width, 1px) solid var(--border-subtle); }
+.dd-keys thead th { font-size: var(--text-xs); color: var(--text-muted); }
+.dd-keys kbd { font-family: var(--font-mono); padding: 0 var(--space-2); border: var(--border-width, 1px) solid var(--border); border-radius: var(--radius); background: var(--surface-muted); }
